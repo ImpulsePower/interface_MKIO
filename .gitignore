@@ -1,0 +1,17 @@
+backups
+
+.vscode
+
+doc/*razr*.pdf
+
+rtl/db
+rtl/incremental_db
+rtl/greybox_tmp
+rtl/output_files
+rtl/*.qip
+rtl/*.qsf
+rtl/*.cnx
+rtl/*.qpf
+rtl/*.qws
+rtl/*_bb.v
+rtl/*_syn.v
