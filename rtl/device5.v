@@ -10,6 +10,7 @@
 // busy - флаг статуса линии
 // cnt_p - счётчик, ошибок паритета в принимаемом пакете
 // cnt - вспомогательный счётчик
+`include "../rtl/mem_dev5.v"
 
 module device5 
 # ( parameter [4:0] ADDRESS = 5'd1) 

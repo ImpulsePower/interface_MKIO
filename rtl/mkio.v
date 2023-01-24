@@ -18,9 +18,9 @@
 // clk_wr_dev5 - тактовый сигнал для памяти
 // busy_dev5 - флаг статуса линии
 
-// `include "mkio_transmitter.v"
-// `include "mkio_receiver.v"
-// `include "mkio_control.v"
+`include "../rtl/mkio_transmitter.v"
+`include "../rtl/mkio_receiver.v"
+`include "../rtl/mkio_control.v"
 
 module mkio (
     // МКИО интерфейс - канал A b

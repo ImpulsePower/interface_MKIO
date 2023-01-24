@@ -15,6 +15,8 @@
     // clk_wr_dev5 - тактовый сигнал для памяти
     // we_dev5 - флаг разрешение записи
     // busy_dev5 - флаг статуса линии
+`include "../rtl/device3.v"
+`include "../rtl/device5.v"
 
 module mkio_control 
 # ( parameter [4:0] ADDRESS = 5'd1,
@@ -64,7 +66,7 @@ wire dev5 = ((~rx_cd)
 wire [15:0] tx_data_dev3; 
 wire tx_cd_dev3, tx_ready_dev3;
 
-defparam device3.ADDRESS = ADDRESS;
+// defparam device3.ADDRESS = ADDRESS;
 device3 device3 (
     .clk      (clk),
     .reset    (reset),
@@ -85,7 +87,7 @@ device3 device3 (
 wire [15:0] tx_data_dev5; 
 wire tx_cd_dev5, tx_ready_dev5;
 
-defparam device5.ADDRESS = ADDRESS;
+// defparam device5.ADDRESS = ADDRESS;
 device5 device5 (
     .clk      (clk),
     .reset    (reset),
