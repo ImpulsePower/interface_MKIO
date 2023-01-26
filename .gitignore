@@ -1,8 +1,7 @@
-backups
-
+sim
 .vscode
 
-doc/*razr*.pdf
+doc/*.pdf
 
 rtl/db
 rtl/incremental_db

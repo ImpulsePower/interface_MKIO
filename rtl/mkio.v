@@ -1,31 +1,11 @@
-// --------------------------------------------------------------
-// Реализация МКИО интерфейса на ПЛИС
-// Исполнитель:
-// --------------------------------------------------------------
-
-// DI1 - прямой сигнал от приёмника драйвера
-// DI0 - инверсный сигнал от приёмника драйвера
-// DO1 - прямой сигнал от передатчика драйвера
-// DO0 - инверсный сигнал от передатчика драйвера
-// RX_STROB - сигнал разрешения работы приёмника
-// TX_INHIBIT - сигнал разрешения работы передатчика
-// addr_rd_dev3 - адрес данных для памяти
-// clk_rd_dev3 - тактовый сигнал для памяти
-// out_data_dev3 - шина данных для передачи в память
-// busy_dev3 - флаг статуса линии
-// addr_wr_dev5 - адрес для записи в память
-// in_data_dev5 - шина данных для приема данных из памяти
-// clk_wr_dev5 - тактовый сигнал для памяти
-// busy_dev5 - флаг статуса линии
-
-`include "../rtl/mkio_transmitter.v"
-`include "../rtl/mkio_receiver.v"
-`include "../rtl/mkio_control.v"
+// `include "../rtl/mkio_control.v"
+// `include "../rtl/mkio_receiver.v"
+// `include "../rtl/mkio_transmitter.v"
 
 module mkio (
-    // МКИО интерфейс - канал A b
     input clk,
     input reset,
+    // МКИО интерфейс - канал A
     input  DI1A, DI0A, 
     output DO1A, DO0A, 
     output RX_STROB_A, 
@@ -33,7 +13,7 @@ module mkio (
     // МКИО интерфейс - канал B (резервный).
     input  DI1B, DI0B, 
     output DO1B, DO0B, 
-    output RX_STROB_B, 
+    output RX_STROB_B,
     output TX_INHIBIT_B,
     // Память ОУ 3
     input  [4:0]  addr_rd_dev3,

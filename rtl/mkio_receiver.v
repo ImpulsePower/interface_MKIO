@@ -1,9 +1,3 @@
-// DI1, DI0 - дифференциальный вход
-// data_get - принятые данные по триггеру done
-// cd_get - указатель на тип слова
-// done - импульс окончания приёма данных
-// parity_error - правило паритета
-
 module mkio_receiver (
     input clk,
     input reset,
