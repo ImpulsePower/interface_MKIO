@@ -2,6 +2,7 @@ sim
 .vscode
 
 doc/*.pdf
+doc/*.drawio
 
 rtl/db
 rtl/incremental_db
