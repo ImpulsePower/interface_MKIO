@@ -1,6 +1,6 @@
 '''Library'''
 from subprocess import call
-from os import chdir,path
+from os         import chdir, path
 
 def set_test_env():
     '''Setting the parameters of the test environment'''
@@ -44,15 +44,7 @@ def add_directive():
         f2.write("""\n`include "../rtl/mem_dev3.v"\n """)
     with open('../rtl/device5.v', 'a') as f3:
         f3.write("""\n`include "../rtl/mem_dev5.v"\n """)
-
     return f0_data,f1_data,f2_data,f3_data
-
-def run_sim(shell, sim, testbench, src):
-    '''Run testbench'''
-    build_cmd = [f"{shell}", f"{sim} -o {testbench}.vvp {src}"]
-    command = ''.join(build_cmd[1])
-    print(f'Start command: {command}\n')
-    call(build_cmd)
 
 def remove_directive(f0_data,f1_data,f2_data,f3_data):
     '''Remove directive for preprocessor'''
@@ -65,6 +57,26 @@ def remove_directive(f0_data,f1_data,f2_data,f3_data):
     with open('../rtl/device5.v', 'wb') as f3:
         f3.write(f3_data)
 
+def run_sim(shell, sim, testbench, src):
+    '''Run simulation'''
+    build_cmd = [f"{shell}", f"{sim} -o ../sim/{testbench}.vvp {src}"]
+    command = ''.join(build_cmd[1])
+    print("\033[35m{}\033[31m".format(f'Start command: {command}\n'))
+    call(build_cmd)
+    print("\n\033[32m{}\033[0m\n".format('Success!'))
+
+def run_testbench(shell, testbench):
+    '''Run testbench'''
+    build_cmd = [f"{shell}", f"vvp -N ../sim/{testbench}.vvp"]
+    command = ''.join(build_cmd[1])
+    print("\033[35m{}\033[0m".format(f'Start command: {command}'))
+    call(build_cmd)
+
+def run_wave(shell,testbench):
+    '''Run GTK Wave'''
+    build_cmd = [f"{shell}", f"gtkwave -N ../sim/{testbench}.vcd"]
+    call(build_cmd)
+
 def main():
     '''main loop'''
     shell, sim = set_test_env()
@@ -72,4 +84,6 @@ def main():
     f0,f1,f2,f3 = add_directive()
     run_sim(shell, sim, testbench, src)
     remove_directive(f0,f1,f2,f3)
+    # run_testbench(shell, testbench)
+    # run_wave(shell)
 main()
