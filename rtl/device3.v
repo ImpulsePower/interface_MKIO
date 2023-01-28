@@ -1,5 +1,3 @@
-`include "../rtl/mem_dev3.v"
-
 module device3 
 # ( parameter [4:0] ADDRESS = 5'd1 ) 
 (

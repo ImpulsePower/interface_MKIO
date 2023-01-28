@@ -1,6 +1,3 @@
-`include "../rtl/device3.v"
-`include "../rtl/device5.v"
-
 module mkio_control 
 # ( parameter [4:0] ADDRESS = 5'd1,
     parameter [4:0] SUBADDR_3 = 5'd3, 
@@ -19,14 +16,14 @@ module mkio_control
     output        tx_cd,
     input         tx_busy,
     // Память dev3
-    input [4:0]   addr_rd_dev3,
     input         clk_rd_dev3,
+    input [4:0]   addr_rd_dev3,
     output [15:0] out_data_dev3,
     output        busy_dev3,
     // Память dev5
-    input [15:0] in_data_dev5,
-    input [4:0]  addr_wr_dev5,
     input        clk_wr_dev5,
+    input [4:0]  addr_wr_dev5,
+    input [15:0] in_data_dev5,
     input        we_dev5,
     output       busy_dev5
 );
@@ -34,16 +31,16 @@ module mkio_control
 // Сообщение для контроллера канала, что пришло командное слово
 wire wr_rd = rx_data[10];
 wire dev3 = ((~rx_cd)
-              &(rx_data[15:11] == ADDRESS)
-              &(rx_data[9:5] == SUBADDR_3)
-              &(rx_done)
-              &(~wr_rd));
+            &(rx_data[15:11] == ADDRESS)
+            &(rx_data[9:5] == SUBADDR_3)
+            &(rx_done)
+            &(~wr_rd));
 
 wire dev5 = ((~rx_cd)
-              &(rx_data[15:11] == ADDRESS)
-              &(rx_data[9:5] == SUBADDR_5)
-              &(rx_done)
-              &(wr_rd));
+            &(rx_data[15:11] == ADDRESS)
+            &(rx_data[9:5] == SUBADDR_5)
+            &(rx_done)
+            &(wr_rd));
 
 // Подмодуль ОУ 3
 wire [15:0] tx_data_dev3; 

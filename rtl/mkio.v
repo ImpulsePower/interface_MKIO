@@ -1,7 +1,3 @@
-// `include "../rtl/mkio_control.v"
-// `include "../rtl/mkio_receiver.v"
-// `include "../rtl/mkio_transmitter.v"
-
 module mkio (
     input clk,
     input reset,
@@ -30,7 +26,7 @@ module mkio (
 
 // clocks
 wire clk32 = clk;
-reg clk16 = 1'b0;
+reg  clk16 = 1'b0;
 always @ (posedge clk32) clk16 <= !clk16;
 
 // Совмещение входных потоков от основного и резервного каналов
@@ -109,4 +105,4 @@ mkio_control RT_control (
     .busy_dev5     (busy_dev5)
 );
 
-endmodule
+endmodule 
