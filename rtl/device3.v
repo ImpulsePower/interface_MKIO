@@ -144,7 +144,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 end
 
 // Подмодуль памяти
-mem_dev3 mem_dev3 (
+mem_dev3 submodule_1 (
     .data      (in_data),
     .wraddress (addr_wr),
     .wren      (we),

@@ -47,7 +47,7 @@ wire [15:0] tx_data_dev3;
 wire tx_cd_dev3, tx_ready_dev3;
 
 // defparam device3.ADDRESS = ADDRESS;
-device3 device3 (
+device3 submodule_1 (
     .clk      (clk),
     .reset    (reset),
     .start    (dev3),
@@ -68,7 +68,7 @@ wire [15:0] tx_data_dev5;
 wire tx_cd_dev5, tx_ready_dev5;
 
 // defparam device5.ADDRESS = ADDRESS;
-device5 device5 (
+device5 submodule_2 (
     .clk      (clk),
     .reset    (reset),
     .start    (dev5),

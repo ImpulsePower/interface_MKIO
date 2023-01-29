@@ -55,7 +55,7 @@ always @ (posedge clk16 or posedge reset)
 wire tx_ready, tx_cd, tx_busy;
 wire [15:0] tx_data;
 
-mkio_transmitter Transmitter (
+mkio_transmitter submodule_1 (
     .clk       (clk16),
     .reset     (reset),
     .DO1       (DO1), 
@@ -71,7 +71,7 @@ mkio_transmitter Transmitter (
 wire rx_cd, rx_done, parity_error;
 wire [15:0] rx_data;
 
-mkio_receiver Receiver (
+mkio_receiver submodule_2 (
     .clk          (clk16),
     .reset        (reset),
     .DI1          (DI1), 
@@ -83,7 +83,7 @@ mkio_receiver Receiver (
 );
 
 // Подмодуль управляющего контроллера оконечных устройств
-mkio_control RT_control (
+mkio_control submodule_3 (
     .clk           (clk32),
     .reset         (reset),
     .rx_done       (rx_done),

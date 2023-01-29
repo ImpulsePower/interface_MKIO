@@ -84,6 +84,6 @@ def main():
     f0,f1,f2,f3 = add_directive()
     run_sim(shell, sim, testbench, src)
     remove_directive(f0,f1,f2,f3)
-    # run_testbench(shell, testbench)
+    run_testbench(shell, testbench)
     # run_wave(shell)
 main()
