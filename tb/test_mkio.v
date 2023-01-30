@@ -37,7 +37,7 @@ mkio mkio(
     RX_STROB_B, TX_INHIBIT_B,
     //Memories interface
     addr_rd_dev3, clk_rd_dev3, out_data_dev3, busy_dev3,
-    in_data_dev5, addr_wr_dev5, clk_wr_dev5, we_dev5, busy_dev5
+    addr_wr_dev5, in_data_dev5, clk_wr_dev5, we_dev5, busy_dev5
 );
 
 reg [15:0] tb_array_dev3 [0:31];
