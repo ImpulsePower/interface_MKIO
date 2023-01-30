@@ -19,10 +19,16 @@ module device5
     output reg   busy
 );
 
-// reg [4:0] addr_wr;
-// reg clk_wr;
-// reg we;
-// wire [15:0] in_data = rx_data;
+// Подмодуль памяти
+mem_dev5 submodule_1 (
+    .data      (in_data),
+    .wraddress (addr_wr),
+    .wren      (we),
+    .rdaddress (addr_rd),
+    .wrclock   (clk_wr), 
+    .rdclock   (clk_rd), 
+    .q         (out_data)
+);
 
 parameter IDLE_STATE       = 8'd0,
           START_STATE      = 8'd1,
@@ -40,6 +46,9 @@ reg [4:0] cnt_word;
 reg [5:0] cnt_p;
 reg [7:0] cnt;
 reg [7:0] STATE;
+
+reg [4:0] addr_rd;
+wire [15:0] out_data;
 
 // Расчёт количество слов которые необходимо принять (N/COM МКИО ГОСТ)
 reg [4:0] num_word = 5'd0;
@@ -86,6 +95,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
     // Отсчитывание кол.тактов, которое соответствует паузе между КС и ОС
         PAUSE_WAIT_STATE:begin
+
             STATE <= LOAD_OS_STATE;
         end
 
@@ -111,6 +121,10 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
     // Чтение данных из внутренней ОЗУ
         READ_DATA_STATE:begin
+            if (clk_rd & addr_rd) begin
+                tx_data = out_data;
+            end
+            else
             STATE <= PREP_DATA_STATE;
         end
 
@@ -151,16 +165,5 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         end            
     endcase
 end
-
-// Подмодуль памяти
-mem_dev5 submodule_1 (
-    .data      (in_data),
-    .wraddress (addr_wr),
-    .wren      (we),
-    .rdaddress (addr_rd),
-    .wrclock   (clk_wr), 
-    .rdclock   (clk_rd), 
-    .q         (out_data)
-);
 
 endmodule

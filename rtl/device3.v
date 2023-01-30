@@ -19,6 +19,17 @@ module device3
     output reg    busy
 );
 
+// Подмодуль памяти
+mem_dev3 submodule_1 (
+    .data      (in_data),
+    .wraddress (addr_wr),
+    .wren      (we),
+    .rdaddress (addr_rd),
+    .wrclock   (clk_wr), 
+    .rdclock   (clk_rd), 
+    .q         (out_data)
+);
+
 // Расчёт количество слов которые необходимо принять (N/COM МКИО ГОСТ)
 reg [4:0] num_word = 5'd0;
 reg [4:0] num_word_buf = 5'd0;
@@ -142,16 +153,5 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         end
     endcase
 end
-
-// Подмодуль памяти
-mem_dev3 submodule_1 (
-    .data      (in_data),
-    .wraddress (addr_wr),
-    .wren      (we),
-    .rdaddress (addr_rd),
-    .wrclock   (clk_wr), 
-    .rdclock   (clk_rd), 
-    .q         (out_data)
-);
 
 endmodule

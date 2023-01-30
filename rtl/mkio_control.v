@@ -28,20 +28,6 @@ module mkio_control
     output       busy_dev5
 );
 
-// Сообщение для контроллера канала, что пришло командное слово
-wire wr_rd = rx_data[10];
-wire dev3 = ((~rx_cd)
-            &(rx_data[15:11] == ADDRESS)
-            &(rx_data[9:5] == SUBADDR_3)
-            &(rx_done)
-            &(~wr_rd));
-
-wire dev5 = ((~rx_cd)
-            &(rx_data[15:11] == ADDRESS)
-            &(rx_data[9:5] == SUBADDR_5)
-            &(rx_done)
-            &(wr_rd));
-
 // Подмодуль ОУ 3
 wire [15:0] tx_data_dev3; 
 wire tx_cd_dev3, tx_ready_dev3;
@@ -83,5 +69,19 @@ device5 submodule_2 (
     .we       (we_dev5),
     .busy     (busy_dev5)
 );
+
+// Сообщение для контроллера канала, что пришло командное слово
+wire wr_rd = rx_data[10];
+wire dev3 = ((~rx_cd)
+            &(rx_data[15:11] == ADDRESS)
+            &(rx_data[9:5] == SUBADDR_3)
+            &(rx_done)
+            &(~wr_rd));
+
+wire dev5 = ((~rx_cd)
+            &(rx_data[15:11] == ADDRESS)
+            &(rx_data[9:5] == SUBADDR_5)
+            &(rx_done)
+            &(wr_rd));
 
 endmodule

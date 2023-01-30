@@ -24,32 +24,6 @@ module mkio (
     output        busy_dev5
 );
 
-// clocks
-wire clk32 = clk;
-reg  clk16 = 1'b0;
-always @ (posedge clk32) clk16 <= !clk16;
-
-// Совмещение входных потоков от основного и резервного каналов
-wire   DI1, DI0, DO1, DO0;
-assign DI1  = DI1A | DI1B;
-assign DI0  = DI0A | DI0B;
-assign DO1A = DO1;
-assign DO0A = DO0;
-assign DO1B = DO1;
-assign DO0B = DO0;
-
-// Разрешение/запрет работы приемника и передатчика в момент
-// передачи информации от ОУ на контроллер канала
-reg [4:0] ena_reg = 5'd0;
-
-always @ (posedge clk16 or posedge reset)
-    if (reset) ena_reg <= 5'd0;
-    else ena_reg <= {ena_reg[3:0], tx_busy};
-        assign RX_STROB_A   = ~{| ena_reg};
-        assign TX_INHIBIT_A = ~{| ena_reg};
-        assign RX_STROB_B   = ~{| ena_reg};
-        assign TX_INHIBIT_B = ~{| ena_reg};
-
 // Подмодуль последовательной передачи парралельных 
 // данных  в виде манчестерского кода по внешнему сигналу
 wire tx_ready, tx_cd, tx_busy;
@@ -104,5 +78,31 @@ mkio_control submodule_3 (
     .we_dev5       (we_dev5),
     .busy_dev5     (busy_dev5)
 );
+
+// clocks
+wire clk32 = clk;
+reg  clk16 = 1'b0;
+always @ (posedge clk32) clk16 <= !clk16;
+
+// Совмещение входных потоков от основного и резервного каналов
+wire   DI1, DI0, DO1, DO0;
+assign DI1  = DI1A | DI1B;
+assign DI0  = DI0A | DI0B;
+assign DO1A = DO1;
+assign DO0A = DO0;
+assign DO1B = DO1;
+assign DO0B = DO0;
+
+// Разрешение/запрет работы приемника и передатчика в момент
+// передачи информации от ОУ на контроллер канала
+reg [4:0] ena_reg = 5'd0;
+
+always @ (posedge clk16 or posedge reset)
+    if (reset) ena_reg <= 5'd0;
+    else ena_reg <= {ena_reg[3:0], tx_busy};
+        assign RX_STROB_A   = ~{| ena_reg};
+        assign TX_INHIBIT_A = ~{| ena_reg};
+        assign RX_STROB_B   = ~{| ena_reg};
+        assign TX_INHIBIT_B = ~{| ena_reg};
 
 endmodule 
