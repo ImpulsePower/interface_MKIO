@@ -20,7 +20,7 @@ module device3
 );
 
 // Подмодуль памяти
-mem_dev3 submodule_1 (
+mem_dev3 mem_dev3_sb (
     .data      (in_data),
     .wraddress (addr_wr),
     .wren      (we),

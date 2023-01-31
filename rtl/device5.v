@@ -20,7 +20,7 @@ module device5
 );
 
 // Подмодуль памяти
-mem_dev5 submodule_1 (
+mem_dev5 mem_dev5_sb (
     .data      (in_data),
     .wraddress (addr_wr),
     .wren      (we),

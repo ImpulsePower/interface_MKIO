@@ -11,7 +11,7 @@ module mem_dev3
   output reg [DATA_WIDTH-1:0] q
 );
     
-reg [DATA_WIDTH-1:0] ram [2 ** ADDR_WIDTH-1:0];
+reg [DATA_WIDTH-1:0] ram [2**ADDR_WIDTH-1:0];
     
 always @(posedge wrclock) if (wren) ram[wraddress] <= data;
     

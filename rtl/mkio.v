@@ -29,7 +29,7 @@ module mkio (
 wire tx_ready, tx_cd, tx_busy;
 wire [15:0] tx_data;
 
-mkio_transmitter submodule_1 (
+mkio_transmitter transmitter_sb (
     .clk       (clk16),
     .reset     (reset),
     .DO1       (DO1), 
@@ -45,7 +45,7 @@ mkio_transmitter submodule_1 (
 wire rx_cd, rx_done, parity_error;
 wire [15:0] rx_data;
 
-mkio_receiver submodule_2 (
+mkio_receiver receiver_sb (
     .clk          (clk16),
     .reset        (reset),
     .DI1          (DI1), 
@@ -57,7 +57,7 @@ mkio_receiver submodule_2 (
 );
 
 // Подмодуль управляющего контроллера оконечных устройств
-mkio_control submodule_3 (
+mkio_control control_sb (
     .clk           (clk32),
     .reset         (reset),
     .rx_done       (rx_done),
