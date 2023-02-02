@@ -141,6 +141,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
     // Передача инф.слова на контроллер канала
         SEND_DATA_STATE:begin
+            if (num_word)
             STATE <= PAUSE_WAIT_STATE;
         end
 

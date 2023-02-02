@@ -138,85 +138,94 @@ task write_ram5 (
 endtask
 
 initial
-begin
-    clk = 0;
-    #15.625 forever #15.625 clk = !clk;
-end
+    begin 
+        clk = 0;
+        #15.625 
+        forever 
+        #15.625 clk = !clk;
+    end
+
+initial 
+    begin
+        // 300 microsec
+        #300000 $finish;
+    end
 
 initial
-begin
-    reset = 1;
-    repeat (10) @(posedge clk);
-    reset = 0;
-end
+    begin
+        reset = 1;
+        repeat (10) @(posedge clk);
+        reset = 0;
+    end
 
 integer i;
 
 initial
-begin
-    //init input signals
-    {DI1A, DI0A} = {2'b00};
-    {DI1B, DI0B} = {2'b00};
-    addr_rd_dev3 = 5'd0;
-    clk_rd_dev3  = 1'b0;
-    in_data_dev5 = 16'd0;
-    addr_wr_dev5 = 5'd0;
-    clk_wr_dev5  = 1'b0;
-    we_dev5 = 1'b0;
+    begin
+        //init input signals
+        {DI1A, DI0A} = {2'b00};
+        {DI1B, DI0B} = {2'b00};
+        addr_rd_dev3 = 5'd0;
+        clk_rd_dev3  = 1'b0;
+        in_data_dev5 = 16'd0;
+        addr_wr_dev5 = 5'd0;
+        clk_wr_dev5  = 1'b0;
+        we_dev5 = 1'b0;
 
-    //test data init
-    $display("\n");
-    $display("*************************");
-    $display("*** TEST DATA INIT ***");
-    $display("*************************");
-    array_init;
+        //test data init
+        $display("\n");
+        $display("*************************");
+        $display("*** TEST DATA INIT ***");
+        $display("*************************");
+        array_init;
 
-    #10000; //wait 10 us
+        #10000; //wait 10 us
 
-    //packet for subaddr 3
-    $display("\n");
-    $display("*************************");
-    $display("*** TESTING SUBADDR 3 ***");
-    $display("*************************");
-    word_transmit (1,{5'd1,1'b0,5'd3,5'd7});
-    $display($time," Transmitted Command Word - ADDRESS 1, SUBADDRESS 3, WORD 7");
-    for (i=0; i<7; i=i+1) begin
-        word_transmit(0,tb_array_dev3[i]);
-        $display($time," Transmitted Data Word - DATA %h", tb_array_dev3[i]);
+        //packet for subaddr 3
+        $display("\n");
+        $display("*************************");
+        $display("*** TESTING SUBADDR 3 ***");
+        $display("*************************");
+        word_transmit (1,{5'd1,1'b0,5'd3,5'd7});
+        $display($time," Transmitted Command Word - ADDRESS 1, SUBADDRESS 3, WORD 7");
+        for (i=0; i<7; i=i+1) begin
+            word_transmit(0,tb_array_dev3[i]);
+            $display($time," Transmitted Data Word - DATA %h", tb_array_dev3[i]);
+        end
+
+        #30000; //wait 30 us
+
+        //read mem_dev3
+        $display("\n");
+        for (i=0; i<7; i=i+1) begin
+            read_ram3(i);
+            $display("Read MEM_DEV3, addr = %d, data = %h", i, out_data_dev3);
+        end
+
+        #10000; //wait 10 us
+
+        $display("\n");
+        $display("************************");
+        $display("***TESTING SUBADDR 5 ***");
+        $display("************************");
+        //write mem_dev5
+        for (i=0; i<5; i=i+1) begin
+            write_ram5(tb_array_dev5[i],i);
+            $display("Write MEM_DEV5, addr = %d, data = %h", i, tb_array_dev5[i]);
+        end
+        //packet for subaddr 5
+        word_transmit (1,{5'd1,1'b1,5'd5,5'd5});
+        #10000;
     end
-
-    #30000; //wait 30 us
-
-    //read mem_dev3
-    $display("\n");
-    for (i=0; i<7; i=i+1) begin
-        read_ram3(i);
-        $display("Read MEM_DEV3, addr = %d, data = %h", i, out_data_dev3);
-    end
-
-    #10000; //wait 10 us
-    
-    $display("\n");
-    $display("************************");
-    $display("***TESTING SUBADDR 5 ***");
-    $display("************************");
-    //write mem_dev5
-    for (i=0; i<5; i=i+1) begin
-        write_ram5(tb_array_dev5[i],i);
-        $display("Write MEM_DEV5, addr = %d, data = %h", i, tb_array_dev5[i]);
-    end
-    //packet for subaddr 5
-    word_transmit (1,{5'd1,1'b1,5'd5,5'd5});
-end
 
 initial
-forever
-if (DO1A ^ DO0A) begin
-    word_receiver;
-end
-else begin
-    @clk;
-end
+    forever
+    if (DO1A ^ DO0A) begin
+        word_receiver;
+    end
+    else begin
+        @clk;
+    end
 
 initial begin
     $dumpfile("../sim/test_mkio.vcd");
