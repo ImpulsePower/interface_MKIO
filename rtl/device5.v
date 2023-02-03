@@ -1,5 +1,5 @@
 module device5 
-# ( parameter [4:0] ADDRESS = 5'd1) 
+# ( parameter [4:0] ADDRESS = 5'd1 ) 
 (
     input clk,
     input reset,
@@ -50,6 +50,8 @@ reg [7:0] STATE;
 reg [4:0] addr_rd;
 wire [15:0] out_data;
 
+reg [7:0] cnt_pause;
+reg [7:0] pause_time = 8'hFF; //8 us
 // Расчёт количество слов которые необходимо принять (N/COM МКИО ГОСТ)
 reg [4:0] num_word = 5'd0;
 reg [4:0] num_word_buf = 5'd0;
@@ -84,24 +86,27 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
             STATE <= IDLE_STATE;
             tx_ready <= 1'b0;
             busy     <= 1'b0;
+            cnt_pause <= 8'h0;
         end
 
     // Сохранение количества информационных слов
         START_STATE:begin
-            STATE <= PAUSE_WAIT_STATE;
             num_word <= rx_data[4:0];
             if (p_error) cnt_p <= cnt_p + 1'b1;
+            STATE <= PAUSE_WAIT_STATE;
         end
 
     // Отсчитывание кол.тактов, которое соответствует паузе между КС и ОС
         PAUSE_WAIT_STATE:begin
-
-            STATE <= LOAD_OS_STATE;
+            if (clk) begin
+                cnt_pause <= cnt_pause + 1'h1;
+                if (cnt_pause == pause_time) STATE <= LOAD_OS_STATE;
+            end
         end
 
     // Подготовка ответного слова (адрес устройства, биты статуса)
         LOAD_OS_STATE:begin
-            STATE <= READ_DATA_STATE;
+            STATE <= SEND_OS_STATE;
             tx_cd   <= 1'b0;
             tx_data <= {ADDRESS, | cnt_p, 10'd0};
         end
@@ -110,7 +115,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         SEND_OS_STATE:begin
             tx_ready <= 1'b1;
             if (cnt == 8'd1) begin
-                STATE <= IDLE_STATE;
+                STATE <= READ_DATA_STATE;
                 cnt <= 8'd0; 
             end
             else begin
@@ -124,12 +129,12 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
             if (clk_rd & addr_rd) begin
                 tx_data = out_data;
             end
-            else
-            STATE <= PREP_DATA_STATE;
+            else STATE <= PREP_DATA_STATE;
         end
 
     // Подготовка инф.слова для передачи на контроллер канала
         PREP_DATA_STATE:begin
+            busy <= 1'b1;
             STATE <= SEND_WAIT_STATE;
         end
 
@@ -141,7 +146,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
     // Передача инф.слова на контроллер канала
         SEND_DATA_STATE:begin
-            if (num_word)
+            // if (num_word)
             STATE <= PAUSE_WAIT_STATE;
         end
 

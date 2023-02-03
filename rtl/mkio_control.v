@@ -84,4 +84,16 @@ wire dev5 = ((~rx_cd)
             &(rx_done)
             &(wr_rd));
 
+//Мультиплексор данных для передатчика
+reg sel = 1'b0;
+always @ (posedge clk) begin 
+    case ({dev3, dev5})  
+        2'b10:sel <= 1'b0;  
+        2'b01:sel <= 1'b1; 
+    endcase
+end
+assign tx_data  = (sel) ? tx_data_dev5  : tx_data_dev3;
+assign tx_cd    = (sel) ? tx_cd_dev5    : tx_cd_dev3;
+assign tx_ready = (sel) ? tx_ready_dev5 : tx_ready_dev3;
+
 endmodule
