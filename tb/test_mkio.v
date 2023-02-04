@@ -147,8 +147,8 @@ initial
 
 initial 
     begin
-        // 300 microsec
-        #300000 $finish;
+        // 500 microsec
+        #500000 $finish;
     end
 
 initial

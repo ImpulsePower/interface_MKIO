@@ -84,7 +84,7 @@ wire dev5 = ((~rx_cd)
             &(rx_done)
             &(wr_rd));
 
-//Мультиплексор данных для передатчика
+//Mux for the transmitter
 reg sel = 1'b0;
 always @ (posedge clk) begin 
     case ({dev3, dev5})  

@@ -1,7 +1,7 @@
 sim
 .vscode
 
-doc/*.pdf
+doc/r*.pdf
 doc/*.drawio
 
 rtl/db
