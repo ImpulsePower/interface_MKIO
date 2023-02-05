@@ -35,20 +35,20 @@ class TestBench():
             f2_data = f2.read()
         with open('../rtl/device5.v', 'rb') as f3:
             f3_data = f3.read()
-        with open('../rtl/mkio.v', 'a') as f0:
+        with open('../rtl/mkio.v', 'a', encoding="utf-8") as f0:
             f0.writelines([
             """\n`include "../rtl/mkio_control.v" """,
             """\n`include "../rtl/mkio_receiver.v" """,
             """\n`include "../rtl/mkio_transmitter.v"\n """
             ])
-        with open('../rtl/mkio_control.v', 'a') as f1:
+        with open('../rtl/mkio_control.v', 'a', encoding="utf-8") as f1:
             f1.writelines([
             """\n`include "../rtl/device3.v" """,
             """\n`include "../rtl/device5.v"\n """
             ])
-        with open('../rtl/device3.v', 'a') as f2:
+        with open('../rtl/device3.v', 'a', encoding="utf-8") as f2:
             f2.write("""\n`include "../rtl/mem_dev3.v"\n """)
-        with open('../rtl/device5.v', 'a') as f3:
+        with open('../rtl/device5.v', 'a', encoding="utf-8") as f3:
             f3.write("""\n`include "../rtl/mem_dev5.v"\n """)
         return f0_data,f1_data,f2_data,f3_data
 
