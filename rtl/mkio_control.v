@@ -63,6 +63,7 @@ device5 device5_sb (
     .tx_data  (tx_data_dev5),
     .tx_cd    (tx_cd_dev5),
     .tx_ready (tx_ready_dev5),
+    .tx_busy  (tx_busy),
     .addr_wr  (addr_wr_dev5),
     .clk_wr   (clk_wr_dev5),
     .in_data  (in_data_dev5),

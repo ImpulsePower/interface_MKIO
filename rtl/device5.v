@@ -11,6 +11,7 @@ module device5
     output reg [15:0] tx_data,
     output reg        tx_cd,
     output reg        tx_ready,
+    input             tx_busy,
     // MEMORY INTERFACE
     input [4:0]  addr_wr,
     input        clk_wr,
@@ -47,8 +48,10 @@ reg [5:0] cnt_p;
 reg [7:0] cnt;
 reg [7:0] STATE;
 
-reg [4:0] addr_rd;
+reg [4:0]   addr_rd;
 wire [15:0] out_data;
+reg [15:0]  rd_data;
+reg clk_rd;
 
 reg [7:0] cnt_pause;
 reg [7:0] pause_time = 8'hFF; //8 us
@@ -61,7 +64,7 @@ always @ (num_word)
         5'd0:    num_word_buf = 5'd31;
         default: num_word_buf = num_word - 1'b1;
     endcase
-    
+
 always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
     if (reset) begin
@@ -71,13 +74,20 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         cnt_p    <= 6'd0;
         tx_ready <= 1'b0;
         busy     <= 1'b0;
+        clk_rd   <= 1'b0;
+        cnt_word <= 5'd0;
+        addr_rd  <= 1'b0;
     end
 
     else if (start)begin
         STATE <= START_STATE;
+        tx_data  <= 16'd0;
         cnt_p    <= 6'd0;
         cnt      <= 8'd0;
-        busy     <= 1'b1; 
+        busy     <= 1'b0;
+        addr_rd  <= 1'b0;
+        clk_rd   <= 1'b0;
+        cnt_word <= 5'd0; 
     end
 
     else case (STATE)
@@ -114,9 +124,10 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
     // Отправка ответного слова на контроллер канала (tx_ready = '1')
         SEND_OS_STATE:begin
             tx_ready <= 1'b1;
-            if (cnt == 8'd1) begin
+            if (cnt == 8'd2) begin
                 STATE <= READ_DATA_STATE;
                 cnt <= 8'd0; 
+                tx_ready <= 1'b0;
             end
             else begin
                 STATE <= SEND_OS_STATE;
@@ -126,41 +137,58 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
     // Чтение данных из внутренней ОЗУ
         READ_DATA_STATE:begin
-            if (clk_rd & addr_rd) begin
-                tx_data = out_data;
-            end
-            else STATE <= PREP_DATA_STATE;
+            // tx_ready <= 1'b0;
+            clk_rd <= 1'b1;
+            STATE <= PREP_DATA_STATE;
         end
 
     // Подготовка инф.слова для передачи на контроллер канала
         PREP_DATA_STATE:begin
-            busy <= 1'b1;
-            STATE <= SEND_WAIT_STATE;
+            clk_rd <= 1'b0;
+            tx_cd   <= 1'b1;
+            busy    <= 1'b1;
+            tx_data <= out_data;
+            // tx_ready <= 1'b1;
+            STATE   <= SEND_WAIT_STATE;
         end
 
     // Ожидание окончания отправки предыдущего слова на контроллер канала
         SEND_WAIT_STATE:begin
-            if (busy) STATE <= SEND_DATA_STATE;
-            else      STATE <= CHECK_NUM_STATE;
+            // tx_ready <= 1'b1;
+            if (tx_busy) begin
+                tx_ready <= 1'b0;
+                STATE <= SEND_WAIT_STATE;
+            end
+            else
+                STATE <= SEND_DATA_STATE;    
         end
 
-    // Передача инф.слова на контроллер канала
         SEND_DATA_STATE:begin
-            // if (num_word)
-            STATE <= PAUSE_WAIT_STATE;
+            // tx_data <= out_data;
+            tx_ready <= 1'b1;
+            if (cnt == 8'd2) begin
+                STATE <= CHECK_NUM_STATE;
+                cnt <= 8'd0; 
+                tx_ready <= 1'b0;
+            end
+            else begin
+                STATE <= SEND_DATA_STATE;
+                cnt <= cnt + 1'b1;
+            end 
+            // STATE <= CHECK_NUM_STATE;
         end
 
     // Проверка количества отправленных информационных слов
         CHECK_NUM_STATE:begin
-            // clk_wr <= 1'b0;
-            // addr_wr <= addr_wr + 1'b1;
+            clk_rd  <= 1'b0;
+            addr_rd <= addr_rd + 1'b1;
             if (cnt_word == num_word_buf) begin
                 cnt_word <= 5'd0;
                 STATE <= END_WAIT_STATE; 
             end
             else begin
                 cnt_word <= cnt_word + 1'b1;
-                STATE <= PAUSE_WAIT_STATE; 
+                STATE <= READ_DATA_STATE; 
             end
         end
 
