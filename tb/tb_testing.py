@@ -80,7 +80,7 @@ class TestBench():
 
     def run_wave(self, shell,testbench):
         '''Run GTK Wave'''
-        gtkwave_attr = '-o -c=4'
+        gtkwave_attr = '-o'
         build_cmd = [f"{shell}", f"gtkwave {gtkwave_attr} ../sim/{testbench}.vcd"]
         run(build_cmd, check=True)
 
