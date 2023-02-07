@@ -1,21 +1,21 @@
 module mkio_transmitter (
-	input clk,
-	input reset,
-	input        imp_send,
-	input        cd_send,
-	input [15:0] data_send,
-	output reg   busy_send,   
-	output reg   DO1, DO0
+	input  logic        clk,
+	input  logic        reset,
+	input  logic        imp_send,
+	input  logic        cd_send,
+	input  logic [15:0] data_send,
+	output logic        busy_send,   
+	output logic        DO1, DO0
 );
 
-reg  [15:0] data_buf;
-reg         cd_buf;
-reg  [2:0]  length_bit;
-reg  [5:0]  count_bit;
+logic  [15:0] data_buf;
+logic         cd_buf;
+logic  [2:0]  length_bit;
+logic  [5:0]  count_bit;
 
-wire [31:0] data_manchester;
-wire [39:0] word_manchester;
-wire        parity;
+logic [31:0] data_manchester;
+logic [39:0] word_manchester;
+logic        parity;
 
 // Формирование манч. посылки
 // Преобразование поле данных в манчестерский вид 
@@ -25,6 +25,7 @@ generate for (i = 0; i < 16; i = i + 1) begin : gen_manchester
         assign data_manchester[2*i + 1] = data_buf[i];
     end
 endgenerate
+
 // Выбор синхросигнала > присвоение поле данных > 
 // > присвоение пары элементов в зав. от бит паритета > вычисление бита паритета
 assign word_manchester[39:34] = (cd_buf) ? 6'b000111 : 6'b111000;
@@ -32,8 +33,7 @@ assign word_manchester[33:2] = data_manchester;
 assign word_manchester[1:0] = (parity) ? 2'b10 : 2'b01;
 assign parity = ~(^ data_buf);
 
-always @ (posedge clk or posedge reset)
-begin
+always_ff @ (posedge clk or posedge reset) begin
     if (reset) begin
         busy_send  <= 1'b0;
         data_buf   <= 16'd0;
@@ -61,7 +61,7 @@ begin
 end
 
 // Выставление разряда посылки, готовой на передачу
-always @(posedge clk)
+always_ff @(posedge clk)
 begin
     if (busy_send) begin
         DO1 <= word_manchester[count_bit];

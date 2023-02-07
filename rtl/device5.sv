@@ -1,23 +1,23 @@
 module device5 
 # ( parameter [4:0] ADDRESS = 5'd1 ) 
 (
-    input clk,
-    input reset,
-    input start,
+    input  logic clk,
+    input  logic reset,
+    input  logic start,
     // RX INTERFACE
-    input [15:0] rx_data,
-    input        p_error,
+    input  logic [15:0] rx_data,
+    input  logic        p_error,
     // TX INTERFACE
-    output reg [15:0] tx_data,
-    output reg        tx_cd,
-    output reg        tx_ready,
-    input             tx_busy,
+    output logic [15:0] tx_data,
+    output logic        tx_cd,
+    output logic        tx_ready,
+    input  logic        tx_busy,
     // MEMORY INTERFACE
-    input [4:0]  addr_wr,
-    input        clk_wr,
-    input [15:0] in_data,
-    input        we,
-    output reg   busy
+    input  logic [4:0]  addr_wr,
+    input  logic        clk_wr,
+    input  logic [15:0] in_data,
+    input  logic        we,
+    output logic        busy
 );
 
 // Подмодуль памяти
@@ -31,6 +31,11 @@ mem_dev5 mem_dev5_sb (
     .q         (out_data)
 );
 
+logic [4:0]  addr_rd;
+logic [15:0] out_data;
+logic [15:0] rd_data;
+logic        clk_rd;
+
 parameter IDLE_STATE       = 8'd0,
           START_STATE      = 8'd1,
           PAUSE_WAIT_STATE = 8'd2,
@@ -43,22 +48,17 @@ parameter IDLE_STATE       = 8'd0,
           CHECK_NUM_STATE  = 8'd9,
           END_WAIT_STATE   = 8'd10;
 
-reg [4:0] cnt_word;
-reg [5:0] cnt_p;
-reg [7:0] STATE;
+logic [4:0] cnt_word;
+logic [5:0] cnt_p;
+logic [7:0] STATE;
 
-reg  [4:0]  addr_rd;
-wire [15:0] out_data;
-reg  [15:0] rd_data;
-reg         clk_rd;
-
-reg [7:0] cnt_pause;
+logic [7:0] cnt_pause;
 // Delays
-reg [7:0] delay_CW_RW = 8'hFF; //8 us
-reg [1:0] delay_impulse = 2'h2; //2 clk
+logic [7:0] delay_CW_RW = 8'hFF; //8 us
+logic [1:0] delay_impulse = 2'h2; //2 clk
 // Расчёт количество слов которые необходимо принять (N/COM МКИО ГОСТ)
-reg [4:0] num_word = 5'd0;
-reg [4:0] num_word_buf = 5'd0;
+logic [4:0] num_word = 5'd0;
+logic [4:0] num_word_buf = 5'd0;
 
 always @ (num_word)
     case (num_word)
@@ -71,7 +71,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
     if (reset) begin
         STATE <= IDLE_STATE;
         cnt_p    <= 6'd0;
-        tx_data   <= 16'd0;
+        tx_data  <= 16'd0;
         clk_rd   <= 1'b0;
         cnt_word <= 5'd0;
         addr_rd  <= 1'b0;
@@ -81,7 +81,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         STATE <= START_STATE;
         tx_data  <= 16'd0;
         cnt_p    <= 6'd0;
-        busy     <= 1'b0;
+        busy     <= 1'b1;
         addr_rd  <= 1'b0;
         clk_rd   <= 1'b0;
         cnt_word <= 5'd0;
@@ -143,7 +143,6 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         PREP_DATA_STATE:begin
             clk_rd  <= 1'b0;
             tx_cd   <= 1'b1;
-            busy    <= 1'b1;
             STATE   <= SEND_WAIT_STATE;
         end
 
@@ -191,3 +190,4 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 end
 
 endmodule
+ 

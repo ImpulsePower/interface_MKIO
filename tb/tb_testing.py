@@ -20,52 +20,53 @@ class TestBench():
         '''Load testbench'''
         testbench = f'test_{module}'
         srcs = []
-        srcs.append(f'{testbench}.v')
-        srcs.append(f'../rtl/{module}.v')
+        srcs.append(f'{testbench}.sv')
+        srcs.append(f'../rtl/{module}.sv')
         src = ' '.join(srcs)
         return testbench, src
 
     def add_directive(self):
         '''Added directive for preprocessor'''
-        with open('../rtl/mkio.v', 'rb') as f0:
+        with open('../rtl/mkio.sv', 'rb') as f0:
             f0_data = f0.read()
-        with open('../rtl/mkio_control.v', 'rb') as f1:
+        with open('../rtl/mkio_control.sv', 'rb') as f1:
             f1_data = f1.read()
-        with open('../rtl/device3.v', 'rb') as f2:
+        with open('../rtl/device3.sv', 'rb') as f2:
             f2_data = f2.read()
-        with open('../rtl/device5.v', 'rb') as f3:
+        with open('../rtl/device5.sv', 'rb') as f3:
             f3_data = f3.read()
-        with open('../rtl/mkio.v', 'a', encoding="utf-8") as f0:
+        with open('../rtl/mkio.sv', 'a', encoding="utf-8") as f0:
             f0.writelines([
-            """\n`include "../rtl/mkio_control.v" """,
-            """\n`include "../rtl/mkio_receiver.v" """,
-            """\n`include "../rtl/mkio_transmitter.v"\n """
+            """\n`include "../rtl/mkio_control.sv" """,
+            """\n`include "../rtl/mkio_receiver.sv" """,
+            """\n`include "../rtl/mkio_transmitter.sv"\n """
             ])
-        with open('../rtl/mkio_control.v', 'a', encoding="utf-8") as f1:
+        with open('../rtl/mkio_control.sv', 'a', encoding="utf-8") as f1:
             f1.writelines([
-            """\n`include "../rtl/device3.v" """,
-            """\n`include "../rtl/device5.v"\n """
+            """\n`include "../rtl/device3.sv" """,
+            """\n`include "../rtl/device5.sv"\n """
             ])
-        with open('../rtl/device3.v', 'a', encoding="utf-8") as f2:
-            f2.write("""\n`include "../rtl/mem_dev3.v"\n """)
-        with open('../rtl/device5.v', 'a', encoding="utf-8") as f3:
-            f3.write("""\n`include "../rtl/mem_dev5.v"\n """)
+        with open('../rtl/device3.sv', 'a', encoding="utf-8") as f2:
+            f2.write("""\n`include "../rtl/mem_dev3.sv"\n """)
+        with open('../rtl/device5.sv', 'a', encoding="utf-8") as f3:
+            f3.write("""\n`include "../rtl/mem_dev5.sv"\n """)
         return f0_data,f1_data,f2_data,f3_data
 
     def remove_directive(self, f0_data, f1_data, f2_data, f3_data):
         '''Remove directive for preprocessor'''
-        with open('../rtl/mkio.v', 'wb') as f0:
+        with open('../rtl/mkio.sv', 'wb') as f0:
             f0.write(f0_data)
-        with open('../rtl/mkio_control.v', 'wb') as f1:
+        with open('../rtl/mkio_control.sv', 'wb') as f1:
             f1.write(f1_data)
-        with open('../rtl/device3.v', 'wb') as f2:
+        with open('../rtl/device3.sv', 'wb') as f2:
             f2.write(f2_data)
-        with open('../rtl/device5.v', 'wb') as f3:
+        with open('../rtl/device5.sv', 'wb') as f3:
             f3.write(f3_data)
 
     def run_sim(self, shell, sim, testbench, src):
         '''Run simulation'''
-        build_cmd = [f"{shell}", f"{sim} -o ../sim/{testbench}.vvp {src}"]
+        sim_attr = '-g2012 -o'
+        build_cmd = [f"{shell}", f"{sim} {sim_attr} ../sim/{testbench}.vvp {src}"]
         command = ''.join(build_cmd[1])
         print("\033[35m{}\033[31m".format(f'Start command: {command}\n'))
         run(build_cmd, check=True)

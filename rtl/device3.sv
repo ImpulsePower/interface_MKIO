@@ -1,23 +1,23 @@
 module device3 
 # ( parameter [4:0] ADDRESS = 5'd1 ) 
 (
-    input clk,
-    input reset, 
-    input start,
+    input logic clk,
+    input logic reset, 
+    input logic start,
     // RX INTERFACE
-    input        rx_done,
-    input [15:0] rx_data,
-    input        p_error,
+    input logic        rx_done,
+    input logic [15:0] rx_data,
+    input logic        p_error,
     // TX INTERFACE
-    output reg [15:0] tx_data,
-    output reg        tx_cd,
-    output reg        tx_ready,
-    input             tx_busy,
+    output logic [15:0] tx_data,
+    output logic        tx_cd,
+    output logic        tx_ready,
+    input  logic        tx_busy,
     // MEMORY INTERFACE
-    input  [4:0]  addr_rd,
-    input         clk_rd,
-    output [15:0] out_data,
-    output reg    busy
+    input  logic [4:0]  addr_rd,
+    input  logic        clk_rd,
+    output logic [15:0] out_data,
+    output logic        busy
 );
 
 // Подмодуль памяти
@@ -32,8 +32,8 @@ mem_dev3 mem_dev3_sb (
 );
 
 // Расчёт количество слов которые необходимо принять (N/COM МКИО ГОСТ)
-reg [4:0] num_word = 5'd0;
-reg [4:0] num_word_buf = 5'd0;
+logic [4:0] num_word = 5'd0;
+logic [4:0] num_word_buf = 5'd0;
 
 always @ (num_word)
     case (num_word)
@@ -41,11 +41,12 @@ always @ (num_word)
         default: num_word_buf = num_word - 1'b1;
     endcase
 
-reg [4:0]   addr_wr;
-reg         clk_wr;
-reg         we;
+logic [4:0]   addr_wr;
+logic         clk_wr;
+logic         we;
 // Приём данных из памяти
-wire [15:0] in_data = rx_data;
+logic [15:0] in_data;
+assign in_data = rx_data;
 
 // Список состояний конечного автомата
 parameter IDLE_STATE      = 8'd0,
@@ -57,14 +58,14 @@ parameter IDLE_STATE      = 8'd0,
           SEND_OS_STATE   = 8'd6,
           END_WAIT_STATE  = 8'd7;
 
-reg [4:0] cnt_word;
-reg [5:0] cnt_p;
-reg [7:0] STATE;
+logic [4:0] cnt_word;
+logic [5:0] cnt_p;
+logic [7:0] STATE;
 
-reg [7:0] cnt_pause;
-reg [1:0] delay_impulse = 2'h2; //2 clk
+logic [7:0] cnt_pause;
+logic [1:0] delay_impulse = 2'h2; //2 clk
 
-always @ (posedge clk or posedge start or posedge reset) begin : state_machine
+always_ff @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
     if (reset) begin
         STATE <= IDLE_STATE;
@@ -165,3 +166,4 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 end
 
 endmodule
+ 

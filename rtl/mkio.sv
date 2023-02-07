@@ -1,33 +1,33 @@
 module mkio (
-    input clk,
-    input reset,
+    input  logic clk,
+    input  logic reset,
     // МКИО интерфейс - канал A
-    input  DI1A, DI0A, 
-    output DO1A, DO0A, 
-    output RX_STROB_A, 
-    output TX_INHIBIT_A,
+    input  logic DI1A, DI0A, 
+    output logic DO1A, DO0A, 
+    output logic RX_STROB_A, 
+    output logic TX_INHIBIT_A,
     // МКИО интерфейс - канал B (резервный).
-    input  DI1B, DI0B, 
-    output DO1B, DO0B, 
-    output RX_STROB_B,
-    output TX_INHIBIT_B,
+    input  logic DI1B, DI0B, 
+    output logic DO1B, DO0B, 
+    output logic RX_STROB_B,
+    output logic TX_INHIBIT_B,
     // Память ОУ 3
-    input  [4:0]  addr_rd_dev3,
-    input         clk_rd_dev3,
-    output [15:0] out_data_dev3,
-    output        busy_dev3,
+    input  logic [4:0]  addr_rd_dev3,
+    input  logic       clk_rd_dev3,
+    output logic [15:0] out_data_dev3,
+    output logic       busy_dev3,
     // Память ОУ 5
-    input [4:0]   addr_wr_dev5,
-    input [15:0]  in_data_dev5,
-    input         clk_wr_dev5,
-    input         we_dev5,
-    output        busy_dev5
+    input  logic [4:0]  addr_wr_dev5,
+    input  logic [15:0] in_data_dev5,
+    input  logic        clk_wr_dev5,
+    input  logic        we_dev5,
+    output logic        busy_dev5
 );
 
 // Подмодуль последовательной передачи парралельных 
 // данных  в виде манчестерского кода по внешнему сигналу
-wire tx_ready, tx_cd, tx_busy;
-wire [15:0] tx_data;
+logic tx_ready, tx_cd, tx_busy;
+logic [15:0] tx_data;
 
 mkio_transmitter transmitter_sb (
     .clk       (clk16),
@@ -42,8 +42,8 @@ mkio_transmitter transmitter_sb (
 
 // Подмодуль приёма информации по МКИО, проверяющий корректность  
 // посылки, и определяющий какое слово принято (КС или ИС) 
-wire rx_cd, rx_done, parity_error;
-wire [15:0] rx_data;
+logic rx_cd, rx_done, parity_error;
+logic [15:0] rx_data;
 
 mkio_receiver receiver_sb (
     .clk          (clk16),
@@ -80,12 +80,13 @@ mkio_control control_sb (
 );
 
 // clocks
-wire clk32 = clk;
-reg  clk16 = 1'b0;
-always @ (posedge clk32) clk16 <= !clk16;
+logic clk32;
+logic clk16 = 1'b0;
+assign clk32 = clk;
+always_ff @ (posedge clk32) clk16 <= !clk16;
 
 // Совмещение входных потоков от основного и резервного каналов
-wire   DI1, DI0, DO1, DO0;
+logic DI1, DI0, DO1, DO0;
 assign DI1  = DI1A | DI1B;
 assign DI0  = DI0A | DI0B;
 assign DO1A = DO1;
@@ -95,14 +96,16 @@ assign DO0B = DO0;
 
 // Разрешение/запрет работы приемника и передатчика в момент
 // передачи информации от ОУ на контроллер канала
-reg [4:0] ena_reg = 5'd0;
+logic [4:0] ena_reg = 5'd0;
 
-always @ (posedge clk16 or posedge reset)
+always_ff @ (posedge clk16 or posedge reset)
     if (reset) ena_reg <= 5'd0;
     else ena_reg <= {ena_reg[3:0], tx_busy};
-        assign RX_STROB_A   = ~{| ena_reg};
-        assign TX_INHIBIT_A = ~{| ena_reg};
-        assign RX_STROB_B   = ~{| ena_reg};
-        assign TX_INHIBIT_B = ~{| ena_reg};
+
+assign RX_STROB_A   = ~{| ena_reg};
+assign TX_INHIBIT_A = ~{| ena_reg};
+assign RX_STROB_B   = ~{| ena_reg};
+assign TX_INHIBIT_B = ~{| ena_reg};
 
 endmodule
+ 

@@ -1,30 +1,32 @@
+// `include "../rtl/mkio.sv"
+
 `timescale 1ns/1ps
 
 module tb ();
 
-reg clk;
-reg reset;
+logic clk;
+logic reset;
 //1553B - channel A
-reg         DI1A, DI0A;
-wire        DO1A, DO0A;
-wire        RX_STROB_A;
-wire        TX_INHIBIT_A;
+logic        DI1A, DI0A;
+logic        DO1A, DO0A;
+logic        RX_STROB_A;
+logic        TX_INHIBIT_A;
 //1553B - channel B
-reg         DI1B, DI0B;
-wire        DO1B, DO0B;
-wire        RX_STROB_B;
-wire        TX_INHIBIT_B;
+logic        DI1B, DI0B;
+logic        DO1B, DO0B;
+logic        RX_STROB_B;
+logic        TX_INHIBIT_B;
 //MEM DEV 3 interface
-reg [4:0]   addr_rd_dev3;
-reg         clk_rd_dev3;
-wire [15:0] out_data_dev3;
-wire        busy_dev3;
+logic [4:0]   addr_rd_dev3;
+logic         clk_rd_dev3;
+logic [15:0] out_data_dev3;
+logic         busy_dev3;
 //MEM DEV 5 interface
-reg [4:0]   addr_wr_dev5;
-reg [15:0]  in_data_dev5;
-reg         clk_wr_dev5;
-reg         we_dev5;
-wire        busy_dev5;
+logic [4:0]   addr_wr_dev5;
+logic [15:0]  in_data_dev5;
+logic         clk_wr_dev5;
+logic         we_dev5;
+logic         busy_dev5;
 
 mkio DUT (
     clk, reset,
@@ -39,8 +41,8 @@ mkio DUT (
     addr_wr_dev5, in_data_dev5, clk_wr_dev5, we_dev5, busy_dev5
 );
 
-reg [15:0] tb_array_dev3 [0:31];
-reg [15:0] tb_array_dev5 [0:31];
+logic [15:0] tb_array_dev3 [0:31];
+logic [15:0] tb_array_dev5 [0:31];
 
 task array_init;
     integer i;
@@ -57,13 +59,13 @@ task array_init;
 endtask
 
 task word_transmit ( 
-    input sync, 
-    input [15:0] data
+    input logic sync, 
+    input logic [15:0] data
  );
 
     integer i;
-    reg [39:0] shift_reg;
-    reg parity;
+    logic [39:0] shift_reg;
+    logic parity;
 
     begin
     //set sync
@@ -93,8 +95,8 @@ endtask
 
 task word_receiver;
     integer i;
-    reg [39:0] tb_man_reg;
-    reg [19:0] tb_data_reg;
+    logic [39:0] tb_man_reg;
+    logic [19:0] tb_data_reg;
 
     begin
     //input
@@ -114,7 +116,7 @@ task word_receiver;
 endtask
 
 task read_ram3 ( 
-    input [4:0] addr
+    input logic [4:0] addr
 );
     begin
         addr_rd_dev3 = addr;
@@ -124,8 +126,8 @@ task read_ram3 (
 endtask
 
 task write_ram5 ( 
-    input [15:0] data, 
-    input [4:0] addr
+    input logic [15:0] data, 
+    input logic [4:0] addr
  );
     begin
         in_data_dev5 <= data;

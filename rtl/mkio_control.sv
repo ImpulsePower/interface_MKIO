@@ -3,34 +3,34 @@ module mkio_control
     parameter [4:0] SUBADDR_3 = 5'd3, 
     parameter [4:0] SUBADDR_5 = 5'd5
 ) (
-    input clk,
-    input reset,
+    input  logic clk,
+    input  logic reset,
     // Приёмник
-    input        rx_done,
-    input [15:0] rx_data,
-    input        rx_cd,
-    input        p_error,
+    input  logic        rx_done,
+    input  logic [15:0] rx_data,
+    input  logic        rx_cd,
+    input  logic        p_error,
     // Передатчик
-    output        tx_ready,
-    output [15:0] tx_data,
-    output        tx_cd,
-    input         tx_busy,
+    output logic        tx_ready,
+    output logic [15:0] tx_data,
+    output logic        tx_cd,
+    input  logic        tx_busy,
     // Память dev3
-    input         clk_rd_dev3,
-    input [4:0]   addr_rd_dev3,
-    output [15:0] out_data_dev3,
-    output        busy_dev3,
+    input  logic        clk_rd_dev3,
+    input  logic [4:0]  addr_rd_dev3,
+    output logic [15:0] out_data_dev3,
+    output logic        busy_dev3,
     // Память dev5
-    input        clk_wr_dev5,
-    input [4:0]  addr_wr_dev5,
-    input [15:0] in_data_dev5,
-    input        we_dev5,
-    output       busy_dev5
+    input  logic        clk_wr_dev5,
+    input  logic [4:0]  addr_wr_dev5,
+    input  logic [15:0] in_data_dev5,
+    input  logic        we_dev5,
+    output logic        busy_dev5
 );
 
 // Подмодуль ОУ 3
-wire [15:0] tx_data_dev3; 
-wire tx_cd_dev3, tx_ready_dev3;
+logic [15:0] tx_data_dev3; 
+logic tx_cd_dev3, tx_ready_dev3;
 
 // defparam device3.ADDRESS = ADDRESS;
 device3 device3_sb (
@@ -51,8 +51,8 @@ device3 device3_sb (
 );
 
 // Подмодуль ОУ 5
-wire [15:0] tx_data_dev5; 
-wire tx_cd_dev5, tx_ready_dev5;
+logic [15:0] tx_data_dev5; 
+logic tx_cd_dev5, tx_ready_dev5;
 
 // defparam device5.ADDRESS = ADDRESS;
 device5 device5_sb (
@@ -73,27 +73,29 @@ device5 device5_sb (
 );
 
 // Сообщение для контроллера канала, что пришло командное слово
-wire wr_rd = rx_data[10];
-wire dev3 = ((~rx_cd)
+// logic wr_rd = rx_data[10];
+assign wr_rd = rx_data[10];
+assign dev3 = ((~rx_cd)
             &(rx_data[15:11] == ADDRESS)
             &(rx_data[9:5] == SUBADDR_3)
             &(rx_done)
             &(~wr_rd));
 
-wire dev5 = ((~rx_cd)
+assign dev5 = ((~rx_cd)
             &(rx_data[15:11] == ADDRESS)
             &(rx_data[9:5] == SUBADDR_5)
             &(rx_done)
             &(wr_rd));
 
 //Mux for the transmitter
-reg sel = 1'b0;
-always @ (posedge clk) begin 
+logic sel = 1'b0;
+always_ff @ (posedge clk) begin 
     case ({dev3, dev5})  
         2'b10:sel <= 1'b0;  
         2'b01:sel <= 1'b1; 
     endcase
 end
+
 assign tx_data  = (sel) ? tx_data_dev5  : tx_data_dev3;
 assign tx_cd    = (sel) ? tx_cd_dev5    : tx_cd_dev3;
 assign tx_ready = (sel) ? tx_ready_dev5 : tx_ready_dev3;
