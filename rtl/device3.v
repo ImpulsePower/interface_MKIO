@@ -12,6 +12,7 @@ module device3
     output reg [15:0] tx_data,
     output reg        tx_cd,
     output reg        tx_ready,
+    input             tx_busy,
     // MEMORY INTERFACE
     input  [4:0]  addr_rd,
     input         clk_rd,
@@ -53,11 +54,15 @@ parameter IDLE_STATE      = 8'd0,
           DATA_SAVE_STATE = 8'd3,
           CHECK_NUM_STATE = 8'd4,
           LOAD_OS_STATE   = 8'd5,
-          SEND_OS_STATE   = 8'd6;
+          SEND_OS_STATE   = 8'd6,
+          END_WAIT_STATE  = 8'd7;
 
 reg [4:0] cnt_word;
 reg [5:0] cnt_p;
-reg [7:0] cnt, STATE;
+reg [7:0] STATE;
+
+reg [7:0] cnt_pause;
+reg [1:0] delay_impulse = 2'h2; //2 clk
 
 always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
@@ -69,7 +74,6 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         clk_wr   <= 1'b0;
         cnt_word <= 5'd0;
         cnt_p    <= 6'd0;
-        cnt      <= 8'd0;
         tx_ready <= 1'b0;
         busy     <= 1'b0; 
     end
@@ -81,7 +85,6 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         clk_wr   <= 1'b0;
         cnt_word <= 5'd0;
         cnt_p    <= 6'd0;
-        cnt      <= 16'd0;
         tx_ready <= 1'b0;
         busy     <= 1'b1; 
     end
@@ -96,6 +99,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
             tx_cd    <= 1'b0;
             we       <= 1'b0;
             busy     <= 1'b0;
+            cnt_pause <= 8'h0;
         end
 
     // Начало обработки информационного слова
@@ -121,12 +125,12 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
     // Состояние проверки количества принятых информационных слов
         CHECK_NUM_STATE:begin
             clk_wr <= 1'b0;
-            addr_wr <= addr_wr + 1'b1;
             if (cnt_word == num_word_buf) begin
                 cnt_word <= 5'd0;
                 STATE <= LOAD_OS_STATE; 
             end
             else begin
+                addr_wr <= addr_wr + 1'b1;
                 cnt_word <= cnt_word + 1'b1;
                 STATE <= DATA_WAIT_STATE; 
             end
@@ -136,21 +140,27 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         LOAD_OS_STATE:begin
             STATE   <= SEND_OS_STATE;
             tx_cd   <= 1'b0;
-            tx_data <= {ADDRESS, | cnt_p, 10'd0};
         end
 
     // Состояние отправки ответного слова на контроллер канала
         SEND_OS_STATE:begin
             tx_ready <= 1'b1;
-            if (cnt == 8'd1) begin
-                STATE <= IDLE_STATE;
-                cnt <= 8'd0; 
-            end
-            else begin
-                STATE <= SEND_OS_STATE;
-                cnt <= cnt + 1'b1; 
+            tx_data <= {ADDRESS, | cnt_p, 10'd0};
+            if (clk) begin
+                cnt_pause <= cnt_pause + 1'h1;
+                if (cnt_pause == delay_impulse) begin
+                    STATE <= END_WAIT_STATE;
+                    cnt_pause <= 2'h0;
+                    tx_ready  <= 1'b0;
+                end      
             end
         end
+
+        END_WAIT_STATE:begin 
+            if (tx_busy) STATE <= END_WAIT_STATE;
+            else         STATE <= IDLE_STATE;
+        end
+
     endcase
 end
 

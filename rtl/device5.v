@@ -45,16 +45,17 @@ parameter IDLE_STATE       = 8'd0,
 
 reg [4:0] cnt_word;
 reg [5:0] cnt_p;
-reg [7:0] cnt;
 reg [7:0] STATE;
 
-reg [4:0]   addr_rd;
+reg  [4:0]  addr_rd;
 wire [15:0] out_data;
-reg [15:0]  rd_data;
-reg clk_rd;
+reg  [15:0] rd_data;
+reg         clk_rd;
 
 reg [7:0] cnt_pause;
-reg [7:0] pause_time = 8'hFF; //8 us
+// Delays
+reg [7:0] delay_CW_RW = 8'hFF; //8 us
+reg [1:0] delay_impulse = 2'h2; //2 clk
 // Расчёт количество слов которые необходимо принять (N/COM МКИО ГОСТ)
 reg [4:0] num_word = 5'd0;
 reg [4:0] num_word_buf = 5'd0;
@@ -69,11 +70,8 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
     if (reset) begin
         STATE <= IDLE_STATE;
-        tx_data  <= 16'd0;
-        cnt      <= 8'd0;
         cnt_p    <= 6'd0;
-        tx_ready <= 1'b0;
-        busy     <= 1'b0;
+        tx_data   <= 16'd0;
         clk_rd   <= 1'b0;
         cnt_word <= 5'd0;
         addr_rd  <= 1'b0;
@@ -83,20 +81,21 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         STATE <= START_STATE;
         tx_data  <= 16'd0;
         cnt_p    <= 6'd0;
-        cnt      <= 8'd0;
         busy     <= 1'b0;
         addr_rd  <= 1'b0;
         clk_rd   <= 1'b0;
-        cnt_word <= 5'd0; 
+        cnt_word <= 5'd0;
     end
 
     else case (STATE)
     // Состояние ожидания импульса на старт приема информационных слов
         IDLE_STATE:begin
-            STATE <= IDLE_STATE;
-            tx_ready <= 1'b0;
-            busy     <= 1'b0;
+            STATE     <= IDLE_STATE;
+            tx_ready  <= 1'b0;
+            tx_data   <= 16'd0;
+            busy      <= 1'b0;
             cnt_pause <= 8'h0;
+            addr_rd  <= 1'b0;
         end
 
     // Сохранение количества информационных слов
@@ -110,7 +109,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         PAUSE_WAIT_STATE:begin
             if (clk) begin
                 cnt_pause <= cnt_pause + 1'h1;
-                if (cnt_pause == pause_time) STATE <= LOAD_OS_STATE;
+                if (cnt_pause == delay_CW_RW) STATE <= LOAD_OS_STATE;
             end
         end
 
@@ -124,79 +123,70 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
     // Отправка ответного слова на контроллер канала (tx_ready = '1')
         SEND_OS_STATE:begin
             tx_ready <= 1'b1;
-            if (cnt == 8'd2) begin
-                STATE <= READ_DATA_STATE;
-                cnt <= 8'd0; 
-                tx_ready <= 1'b0;
-            end
-            else begin
-                STATE <= SEND_OS_STATE;
-                cnt <= cnt + 1'b1; 
+            if (clk) begin
+                cnt_pause <= cnt_pause + 1'h1;
+                if (cnt_pause == delay_impulse) begin
+                    cnt_pause <= 8'h0;
+                    tx_ready <= 1'b0;
+                    STATE <= READ_DATA_STATE;
+                end      
             end
         end
 
     // Чтение данных из внутренней ОЗУ
         READ_DATA_STATE:begin
-            // tx_ready <= 1'b0;
             clk_rd <= 1'b1;
-            STATE <= PREP_DATA_STATE;
+            STATE  <= PREP_DATA_STATE;
         end
 
     // Подготовка инф.слова для передачи на контроллер канала
         PREP_DATA_STATE:begin
-            clk_rd <= 1'b0;
+            clk_rd  <= 1'b0;
             tx_cd   <= 1'b1;
             busy    <= 1'b1;
-            tx_data <= out_data;
-            // tx_ready <= 1'b1;
             STATE   <= SEND_WAIT_STATE;
         end
 
     // Ожидание окончания отправки предыдущего слова на контроллер канала
         SEND_WAIT_STATE:begin
-            // tx_ready <= 1'b1;
-            if (tx_busy) begin
-                tx_ready <= 1'b0;
-                STATE <= SEND_WAIT_STATE;
-            end
-            else
-                STATE <= SEND_DATA_STATE;    
+            if (tx_busy) STATE <= SEND_WAIT_STATE;
+            else         STATE <= SEND_DATA_STATE;    
         end
 
         SEND_DATA_STATE:begin
-            // tx_data <= out_data;
             tx_ready <= 1'b1;
-            if (cnt == 8'd2) begin
-                STATE <= CHECK_NUM_STATE;
-                cnt <= 8'd0; 
-                tx_ready <= 1'b0;
+            tx_data  <= out_data;
+            if (clk) begin
+                cnt_pause <= cnt_pause + 1'h1;
+                if (cnt_pause == delay_impulse) begin
+                    cnt_pause <= 8'h0;
+                    tx_ready  <= 1'b0;
+                    STATE <= CHECK_NUM_STATE;
+                end      
             end
-            else begin
-                STATE <= SEND_DATA_STATE;
-                cnt <= cnt + 1'b1;
-            end 
-            // STATE <= CHECK_NUM_STATE;
         end
 
     // Проверка количества отправленных информационных слов
         CHECK_NUM_STATE:begin
             clk_rd  <= 1'b0;
-            addr_rd <= addr_rd + 1'b1;
             if (cnt_word == num_word_buf) begin
                 cnt_word <= 5'd0;
-                STATE <= END_WAIT_STATE; 
+                addr_rd  <= 1'b0;
+                STATE    <= END_WAIT_STATE; 
             end
             else begin
+                addr_rd  <= addr_rd + 1'b1;
                 cnt_word <= cnt_word + 1'b1;
-                STATE <= READ_DATA_STATE; 
+                STATE    <= READ_DATA_STATE; 
             end
         end
 
     // Окончание передачи всей информации на контроллер канала
-        END_WAIT_STATE:begin
-            STATE <= IDLE_STATE;
-            cnt <= 8'd0;
-        end            
+        END_WAIT_STATE:begin 
+            if (tx_busy) STATE <= END_WAIT_STATE;
+            else         STATE <= IDLE_STATE;
+        end
+                          
     endcase
 end
 

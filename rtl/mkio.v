@@ -105,4 +105,4 @@ always @ (posedge clk16 or posedge reset)
         assign RX_STROB_B   = ~{| ena_reg};
         assign TX_INHIBIT_B = ~{| ena_reg};
 
-endmodule 
+endmodule

@@ -43,6 +43,7 @@ device3 device3_sb (
     .tx_data  (tx_data_dev3),
     .tx_cd    (tx_cd_dev3),
     .tx_ready (tx_ready_dev3),
+    .tx_busy  (tx_busy),
     .addr_rd  (addr_rd_dev3),
     .clk_rd   (clk_rd_dev3),
     .out_data (out_data_dev3),

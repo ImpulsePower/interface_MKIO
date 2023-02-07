@@ -216,6 +216,7 @@ initial
         //packet for subaddr 5
         word_transmit (1,{5'd1,1'b1,5'd5,5'd5});
         #10000;
+        $display("\n");
     end
 
 initial
