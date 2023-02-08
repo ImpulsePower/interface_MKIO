@@ -3,12 +3,12 @@ One of the many implementations of the MKIO on-board interface (MIL-STD-1553)
 
 ## Introduction
 
-    So, the standard MIL-STD-1553B (MCIO) is intended for use in military avionics, 
+So, the standard MIL-STD-1553B (MCIO) is intended for use in military avionics, 
 but later it began to be used in civilian systems. MIL-STD-1553B communication 
 channels have a bus organization. There is one common trunk, and terminal are 
 connected to it through galvanic isolation. The number of terminals can be up to 31
 
-    All subscribers on the trunk are divided into three types:
+All subscribers on the trunk are divided into three types:
 * BC - bus controller. The central device of the system. Sends command words (BC) and 
 information data to other subscribers. There can be only one BC on one trunk.
 * RT is a remote terminals. One of 31 peripheral devices. It waits for command words 
@@ -49,7 +49,14 @@ The structure of the project is shown below:
 * tb_testing.py       : Python script to run a testbench
 * test_mkio.sv        : Testbench
 
-## Hardware requerements 
+## Hardware Requirements
+
+* Intel / Altera EP3C25F324C6 
+* Total logic elements: 337
+* Total registers: 221
+* Total pins: 61
+* Total memory bits: 1024
+
 ## Documentation
 
 * MIL-STD-1553 Tutorial (in doc)

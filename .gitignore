@@ -3,6 +3,7 @@ sim/*
 
 doc/r*.pdf
 doc/*.drawio
+doc/*.bkp
 
 rtl/db
 rtl/incremental_db
