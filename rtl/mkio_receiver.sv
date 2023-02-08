@@ -1,7 +1,7 @@
 module mkio_receiver (
-    input logic clk,
-    input logic reset,
-    input logic DI1, DI0,
+    input  logic clk,
+    input  logic reset,
+    input  logic DI1, DI0,
     output logic [15:0] data_get,
     output logic cd_get,
     output logic done,

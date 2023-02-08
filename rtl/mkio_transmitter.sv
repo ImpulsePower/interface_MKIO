@@ -8,10 +8,10 @@ module mkio_transmitter (
 	output logic        DO1, DO0
 );
 
-logic  [15:0] data_buf;
-logic         cd_buf;
-logic  [2:0]  length_bit;
-logic  [5:0]  count_bit;
+logic [15:0] data_buf;
+logic        cd_buf;
+logic [2:0]  length_bit;
+logic [5:0]  count_bit;
 
 logic [31:0] data_manchester;
 logic [39:0] word_manchester;

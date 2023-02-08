@@ -31,9 +31,9 @@ class TestBench():
             f0_data = f0.read()
         with open('../rtl/mkio_control.sv', 'rb') as f1:
             f1_data = f1.read()
-        with open('../rtl/device3.sv', 'rb') as f2:
+        with open('../rtl/device2.sv', 'rb') as f2:
             f2_data = f2.read()
-        with open('../rtl/device5.sv', 'rb') as f3:
+        with open('../rtl/device4.sv', 'rb') as f3:
             f3_data = f3.read()
         with open('../rtl/mkio.sv', 'a', encoding="utf-8") as f0:
             f0.writelines([
@@ -43,13 +43,13 @@ class TestBench():
             ])
         with open('../rtl/mkio_control.sv', 'a', encoding="utf-8") as f1:
             f1.writelines([
-            """\n`include "../rtl/device3.sv" """,
-            """\n`include "../rtl/device5.sv"\n """
+            """\n`include "../rtl/device2.sv" """,
+            """\n`include "../rtl/device4.sv"\n """
             ])
-        with open('../rtl/device3.sv', 'a', encoding="utf-8") as f2:
-            f2.write("""\n`include "../rtl/mem_dev3.sv"\n """)
-        with open('../rtl/device5.sv', 'a', encoding="utf-8") as f3:
-            f3.write("""\n`include "../rtl/mem_dev5.sv"\n """)
+        with open('../rtl/device2.sv', 'a', encoding="utf-8") as f2:
+            f2.write("""\n`include "../rtl/mem_dev2.sv"\n """)
+        with open('../rtl/device4.sv', 'a', encoding="utf-8") as f3:
+            f3.write("""\n`include "../rtl/mem_dev4.sv"\n """)
         return f0_data,f1_data,f2_data,f3_data
 
     def remove_directive(self, f0_data, f1_data, f2_data, f3_data):
@@ -58,9 +58,9 @@ class TestBench():
             f0.write(f0_data)
         with open('../rtl/mkio_control.sv', 'wb') as f1:
             f1.write(f1_data)
-        with open('../rtl/device3.sv', 'wb') as f2:
+        with open('../rtl/device2.sv', 'wb') as f2:
             f2.write(f2_data)
-        with open('../rtl/device5.sv', 'wb') as f3:
+        with open('../rtl/device4.sv', 'wb') as f3:
             f3.write(f3_data)
 
     def run_sim(self, shell, sim, testbench, src):

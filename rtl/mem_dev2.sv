@@ -1,4 +1,4 @@
-module mem_dev3 
+module mem_dev2 
 # ( parameter DATA_WIDTH = 16,
     parameter ADDR_WIDTH = 5
 ) (

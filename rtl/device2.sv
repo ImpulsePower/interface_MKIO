@@ -1,4 +1,4 @@
-module device3 
+module device2 
 # ( parameter [4:0] ADDRESS = 5'd1 ) 
 (
     input logic clk,
@@ -21,7 +21,7 @@ module device3
 );
 
 // Подмодуль памяти
-mem_dev3 mem_dev3_sb (
+mem_dev2 mem_dev2_sb (
     .data      (in_data),
     .wraddress (addr_wr),
     .wren      (we),
@@ -41,9 +41,9 @@ always @ (num_word)
         default: num_word_buf = num_word - 1'b1;
     endcase
 
-logic [4:0]   addr_wr;
-logic         clk_wr;
-logic         we;
+logic [4:0]  addr_wr;
+logic        clk_wr;
+logic        we;
 // Приём данных из памяти
 logic [15:0] in_data;
 assign in_data = rx_data;
@@ -63,6 +63,7 @@ logic [5:0] cnt_p;
 logic [7:0] STATE;
 
 logic [7:0] cnt_pause;
+// Delays
 logic [1:0] delay_impulse = 2'h2; //2 clk
 
 always_ff @ (posedge clk or posedge start or posedge reset) begin : state_machine
@@ -166,4 +167,5 @@ always_ff @ (posedge clk or posedge start or posedge reset) begin : state_machin
 end
 
 endmodule
+
  

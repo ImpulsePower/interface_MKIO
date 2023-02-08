@@ -1,4 +1,4 @@
-module device5 
+module device4 
 # ( parameter [4:0] ADDRESS = 5'd1 ) 
 (
     input  logic clk,
@@ -21,7 +21,7 @@ module device5
 );
 
 // Подмодуль памяти
-mem_dev5 mem_dev5_sb (
+mem_dev4 mem_dev4_sb (
     .data      (in_data),
     .wraddress (addr_wr),
     .wren      (we),
@@ -63,7 +63,7 @@ logic [4:0] num_word_buf = 5'd0;
 always @ (num_word)
     case (num_word)
         5'd0:    num_word_buf = 5'd31;
-        default: num_word_buf = num_word - 1'b1;
+        default: num_word_buf = num_word;
     endcase
 
 always @ (posedge clk or posedge start or posedge reset) begin : state_machine
@@ -181,7 +181,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
         end
 
     // Окончание передачи всей информации на контроллер канала
-        END_WAIT_STATE:begin 
+        END_WAIT_STATE:begin
             if (tx_busy) STATE <= END_WAIT_STATE;
             else         STATE <= IDLE_STATE;
         end
@@ -190,4 +190,5 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 end
 
 endmodule
+
  

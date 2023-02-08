@@ -16,17 +16,17 @@ logic        DI1B, DI0B;
 logic        DO1B, DO0B;
 logic        RX_STROB_B;
 logic        TX_INHIBIT_B;
-//MEM DEV 3 interface
-logic [4:0]   addr_rd_dev3;
-logic         clk_rd_dev3;
-logic [15:0] out_data_dev3;
-logic         busy_dev3;
-//MEM DEV 5 interface
-logic [4:0]   addr_wr_dev5;
-logic [15:0]  in_data_dev5;
-logic         clk_wr_dev5;
-logic         we_dev5;
-logic         busy_dev5;
+//MEM DEV 2 interface
+logic [4:0]   addr_rd_dev2;
+logic         clk_rd_dev2;
+logic [15:0] out_data_dev2;
+logic         busy_dev2;
+//MEM DEV 4 interface
+logic [4:0]   addr_wr_dev4;
+logic [15:0]  in_data_dev4;
+logic         clk_wr_dev4;
+logic         we_dev4;
+logic         busy_dev4;
 
 mkio DUT (
     clk, reset,
@@ -37,23 +37,23 @@ mkio DUT (
     DI1B, DI0B, DO1B, DO0B,
     RX_STROB_B, TX_INHIBIT_B,
     //Memories interface
-    addr_rd_dev3, clk_rd_dev3, out_data_dev3, busy_dev3,
-    addr_wr_dev5, in_data_dev5, clk_wr_dev5, we_dev5, busy_dev5
+    addr_rd_dev2, clk_rd_dev2, out_data_dev2, busy_dev2,
+    addr_wr_dev4, in_data_dev4, clk_wr_dev4, we_dev4, busy_dev4
 );
 
-logic [15:0] tb_array_dev3 [0:31];
-logic [15:0] tb_array_dev5 [0:31];
+logic [15:0] tb_array_dev2 [0:31];
+logic [15:0] tb_array_dev4 [0:31];
 
 task array_init;
     integer i;
     begin
         // $monitor
-        $display(" | data test dev3 | data test dev5 ");
+        $display(" | data test dev2 | data test dev4 ");
         $display("******************|*************");
         for (i = 0; i <= 31; i = i + 1) begin
-            tb_array_dev3[i] = {$random} % (2**16-1);
-            tb_array_dev5[i] = {$random} % (2**16-1);
-            $display("%d | %h\t\t | %h\t\t", i, tb_array_dev3[i], tb_array_dev5[i]);
+            tb_array_dev2[i] = {$random} % (2**16-1);
+            tb_array_dev4[i] = {$random} % (2**16-1);
+            $display("%d | %h\t\t | %h\t\t", i, tb_array_dev2[i], tb_array_dev4[i]);
         end
     end
 endtask
@@ -115,27 +115,27 @@ task word_receiver;
     end
 endtask
 
-task read_ram3 ( 
+task read_ram2 ( 
     input logic [4:0] addr
 );
     begin
-        addr_rd_dev3 = addr;
-        #31.25 clk_rd_dev3 = 1'b1;
-        #31.25 clk_rd_dev3 = 1'b0;
+        addr_rd_dev2 = addr;
+        #31.25 clk_rd_dev2 = 1'b1;
+        #31.25 clk_rd_dev2 = 1'b0;
     end
 endtask
 
-task write_ram5 ( 
+task write_ram4 ( 
     input logic [15:0] data, 
     input logic [4:0] addr
  );
     begin
-        in_data_dev5 <= data;
-        addr_wr_dev5 <= addr;
-        we_dev5      <= 1'b1;
-        #31.25 clk_wr_dev5 = 1'b1;
-        #31.25 clk_wr_dev5 = 1'b0;
-        we_dev5      <= 1'b0;
+        in_data_dev4 <= data;
+        addr_wr_dev4 <= addr;
+        we_dev4      <= 1'b1;
+        #31.25 clk_wr_dev4 = 1'b1;
+        #31.25 clk_wr_dev4 = 1'b0;
+        we_dev4      <= 1'b0;
     end
 endtask
 
@@ -167,12 +167,12 @@ initial
         //init input signals
         {DI1A, DI0A} = {2'b00};
         {DI1B, DI0B} = {2'b00};
-        addr_rd_dev3 = 5'd0;
-        clk_rd_dev3  = 1'b0;
-        in_data_dev5 = 16'd0;
-        addr_wr_dev5 = 5'd0;
-        clk_wr_dev5  = 1'b0;
-        we_dev5 = 1'b0;
+        addr_rd_dev2 = 5'd0;
+        clk_rd_dev2  = 1'b0;
+        in_data_dev4 = 16'd0;
+        addr_wr_dev4 = 5'd0;
+        clk_wr_dev4  = 1'b0;
+        we_dev4 = 1'b0;
 
         //test data init
         $display("\n");
@@ -183,40 +183,40 @@ initial
 
         #10000; //wait 10 us
 
-        //packet for subaddr 3
+        //packet for subaddr 2
         $display("\n");
         $display("*************************");
-        $display("*** TESTING SUBADDR 3 ***");
+        $display("*** TESTING SUBADDR 2 ***");
         $display("*************************");
-        word_transmit (1,{5'd1,1'b0,5'd3,5'd7});
-        $display($time," Transmitted Command Word - ADDRESS 1, SUBADDRESS 3, WORD 7");
+        word_transmit (1,{5'd1,1'b0,5'd2,5'd7});
+        $display($time," Transmitted Command Word - ADDRESS 1, SUBADDRESS 2, WORD 7");
         for (i=0; i<7; i=i+1) begin
-            word_transmit(0,tb_array_dev3[i]);
-            $display($time," Transmitted Data Word - DATA %h", tb_array_dev3[i]);
+            word_transmit(0,tb_array_dev2[i]);
+            $display($time," Transmitted Data Word - DATA %h", tb_array_dev2[i]);
         end
 
         #30000; //wait 30 us
 
-        //read mem_dev3
+        //read mem_dev2
         $display("\n");
         for (i=0; i<7; i=i+1) begin
-            read_ram3(i);
-            $display("Read MEM_DEV3, addr = %d, data = %h", i, out_data_dev3);
+            read_ram2(i);
+            $display("Read MEM_DEV3, addr = %d, data = %h", i, out_data_dev2);
         end
 
         #10000; //wait 10 us
 
         $display("\n");
         $display("************************");
-        $display("***TESTING SUBADDR 5 ***");
+        $display("***TESTING SUBADDR 4 ***");
         $display("************************");
-        //write mem_dev5
+        //write mem_dev4
         for (i=0; i<5; i=i+1) begin
-            write_ram5(tb_array_dev5[i],i);
-            $display("Write MEM_DEV5, addr = %d, data = %h", i, tb_array_dev5[i]);
+            write_ram4(tb_array_dev4[i],i);
+            $display("Write MEM_DEV4, addr = %d, data = %h", i, tb_array_dev4[i]);
         end
-        //packet for subaddr 5
-        word_transmit (1,{5'd1,1'b1,5'd5,5'd5});
+        //packet for subaddr 4
+        word_transmit (1,{5'd1,1'b1,5'd4,5'd4});
         #10000;
         $display("\n");
     end
