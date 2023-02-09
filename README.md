@@ -29,7 +29,7 @@ This project implements a remote terminal. Let's go
 Running the included testbench requires Python and Icarus Verilog.
 To start the simulation, just run the script in the tb folder
 
-## Block-diagram project
+## Block-diagram of project
 
 ![Block-diagram](/doc/Block_diagram.png)
 
