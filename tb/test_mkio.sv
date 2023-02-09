@@ -1,5 +1,3 @@
-// `include "../rtl/mkio.sv"
-
 `timescale 1ns/1ps
 
 module tb ();
@@ -216,7 +214,7 @@ initial
             $display("Write MEM_DEV4, addr = %d, data = %h", i, tb_array_dev4[i]);
         end
         //packet for subaddr 4
-        word_transmit (1,{5'd1,1'b1,5'd4,5'd4});
+        word_transmit (1,{5'd1,1'b1,5'd4,5'd5});
         #10000;
         $display("\n");
     end

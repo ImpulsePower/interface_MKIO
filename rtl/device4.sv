@@ -63,7 +63,7 @@ logic [4:0] num_word_buf = 5'd0;
 always @ (num_word)
     case (num_word)
         5'd0:    num_word_buf = 5'd31;
-        default: num_word_buf = num_word;
+        default: num_word_buf = num_word - 1'b1;
     endcase
 
 always @ (posedge clk or posedge start or posedge reset) begin : state_machine
