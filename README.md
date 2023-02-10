@@ -12,7 +12,7 @@ All subscribers on the trunk are divided into three types:
 * BC is a bus controller. The central device of the system. Sends command words (BC) and 
 information data to other subscribers. There can be only one BC on one trunk.
 * RT is a remote terminals. One of 31 peripheral devices. It waits for command words 
-from the BC, processes them, and sends the response word (OS) back to the BC. Each DT 
+from the BC, processes them, and sends the response word (RS) back to the BC. Each RT 
 has a unique address of 5 bits.
 * BM is a bus monitor. Something like a reporting device. Monitors the information in 
 the channel. Collects statistics, etc.

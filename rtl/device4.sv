@@ -36,6 +36,8 @@ logic [15:0] out_data;
 logic [15:0] rd_data;
 logic        clk_rd;
 
+// typedef enum logic [3:0] {S0, S1, S2} statetype;
+
 parameter IDLE_STATE       = 8'd0,
           START_STATE      = 8'd1,
           PAUSE_WAIT_STATE = 8'd2,

@@ -48,6 +48,8 @@ logic        we;
 logic [15:0] in_data;
 assign in_data = rx_data;
 
+// typedef enum logic [3:0] {S0, S1, S2} statetype;
+
 // Список состояний конечного автомата
 parameter IDLE_STATE      = 8'd0,
           START_STATE     = 8'd1,
