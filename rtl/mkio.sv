@@ -1,22 +1,23 @@
-module mkio (
+module mkio 
+(
     input  logic        clk,
     input  logic        reset,
-    // МКИО интерфейс - канал A
+    // MKIO interface - channel A
     input  logic        DI1A, DI0A, 
     output logic        DO1A, DO0A, 
     output logic        RX_STROB_A, 
     output logic        TX_INHIBIT_A,
-    // МКИО интерфейс - канал B (резервный).
+    // MKIO interface - channel B (backup)
     input  logic        DI1B, DI0B, 
     output logic        DO1B, DO0B, 
     output logic        RX_STROB_B,
     output logic        TX_INHIBIT_B,
-    // Память ОУ 2
+    // MEM_DEV 2 interface
     input  logic [4:0]  addr_rd_dev2,
     input  logic        clk_rd_dev2,
     output logic [15:0] out_data_dev2,
     output logic        busy_dev2,
-    // Память ОУ 4
+    // MEM_DEV 4 interface
     input  logic [4:0]  addr_wr_dev4,
     input  logic [15:0] in_data_dev4,
     input  logic        clk_wr_dev4,
@@ -24,8 +25,8 @@ module mkio (
     output logic        busy_dev4
 );
 
-// Подмодуль последовательной передачи парралельных 
-// данных  в виде манчестерского кода по внешнему сигналу
+// Sub-module for serial transmission of Parallel 
+// Manchester code data in the form of an external signal
 logic tx_ready, tx_cd, tx_busy;
 logic [15:0] tx_data;
 
@@ -40,8 +41,8 @@ mkio_transmitter transmitter_sb (
     .busy_send (tx_busy)
 );
 
-// Подмодуль приёма информации по МКИО, проверяющий корректность  
-// посылки, и определяющий какое слово принято (КС или ИС) 
+// Sub-module for receiving information by ICIO, which checks 
+// the correctness of parcel, and determines which word is accepted (CW or IC)
 logic rx_cd, rx_done, parity_error;
 logic [15:0] rx_data;
 
@@ -56,7 +57,7 @@ mkio_receiver receiver_sb (
     .parity_error (parity_error)
 );
 
-// Подмодуль управляющего контроллера оконечных устройств
+// Terminal controller submodule
 mkio_control control_sb (
     .clk           (clk32),
     .reset         (reset),
@@ -86,7 +87,7 @@ logic clk16 = 1'b0;
 assign clk32 = clk;
 always_ff @(posedge clk32) clk16 <= !clk16;
 
-// Совмещение входных потоков от основного и резервного каналов
+// Combination of input streams from the main and backup channels
 logic DI1, DI0, DO1, DO0;
 
 always_comb begin : inout_MKIO
@@ -98,8 +99,8 @@ always_comb begin : inout_MKIO
     DO0B = DO0;
 end
 
-// Разрешение/запрет работы приемника и передатчика в момент
-// передачи информации от ОУ на контроллер канала
+// Enable/disable receiver and transmitter operation at the moment of 
+// Transmission of information from the RT to the channel controller
 logic [4:0] ena_reg = 5'd0;
 
 always_ff @(posedge clk16 or posedge reset) begin
@@ -115,4 +116,3 @@ always_comb begin : permit_transmitter
 end
 
 endmodule
- 

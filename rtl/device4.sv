@@ -20,7 +20,7 @@ module device4
     output logic        busy
 );
 
-// Подмодуль памяти
+// Sub-module of memory
 mem_dev4 mem_dev4_sb (
     .data      (in_data),
     .wraddress (addr_wr),
@@ -40,10 +40,12 @@ logic [4:0] cnt_word;
 logic [5:0] cnt_p;
 
 logic [7:0] cnt_pause;
+
 // Delays
 logic [7:0] delay_CW_RW = 8'hFF; //8 us
 logic [1:0] delay_impulse = 2'h2; //2 clk
-// Расчёт количество слов которые необходимо принять (N/COM МКИО ГОСТ)
+
+// Calculation of the number of words to be taken (N/COM)
 logic [4:0] num_word = 5'd0;
 logic [4:0] num_word_buf = 5'd0;
 
@@ -53,7 +55,7 @@ always @ (num_word)
         default: num_word_buf = num_word - 1'b1;
     endcase
 
-// Список состояний конечного автомата
+// List of states of a state machine
 typedef enum logic [3:0] {   
     IDLE       = 4'h0,
     INIT       = 4'h1,
@@ -91,7 +93,7 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
     end
 
     else case (STATE)
-    // Состояние ожидания импульса на старт приема информационных слов
+        // State of waiting for a pulse to start receiving data word
         IDLE:begin
             STATE     <= IDLE;
             tx_ready  <= 1'b0;
@@ -101,14 +103,15 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
             addr_rd   <= 1'b0;
         end
 
-    // Сохранение количества информационных слов
+        // Save the number of data words (DW)
         INIT:begin
             STATE    <= PAUSE_WAIT;
             num_word <= rx_data[4:0];
             if (p_error) cnt_p <= cnt_p + 1'b1;
         end
 
-    // Отсчитывание кол.тактов, которое соответствует паузе между КС и ОС
+        // Counting the number of cycles, which corresponds to the pause 
+        // between the command word (CW) and status word (SW)
         PAUSE_WAIT:begin
             if (clk) begin
                 cnt_pause <= cnt_pause + 1'h1;
@@ -117,14 +120,14 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
             end
         end
 
-    // Подготовка ответного слова (адрес устройства, биты статуса)
+        // Preparing the status word (device address, status bits)
         LOAD_OS:begin
             STATE <= SEND_OS;
             tx_cd   <= 1'b0;
             tx_data <= {ADDRESS, | cnt_p, 10'd0};
         end
 
-    // Отправка ответного слова на контроллер канала (tx_ready = '1')
+        // Sending a status word to the channel controller
         SEND_OS:begin
             tx_ready <= 1'b1;
             if (clk) begin
@@ -137,25 +140,26 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
             end
         end
 
-    // Чтение данных из внутренней ОЗУ
+        // Reading data from RAM
         READ_DATA:begin
             clk_rd <= 1'b1;
             STATE  <= PREP_DATA;
         end
 
-    // Подготовка инф.слова для передачи на контроллер канала
+        // Preparation of the data word for transmission to the channel controller
         PREP_DATA:begin
             clk_rd  <= 1'b0;
             tx_cd   <= 1'b1;
             STATE   <= SEND_WAIT;
         end
 
-    // Ожидание окончания отправки предыдущего слова на контроллер канала
+        // Waiting for the end of sending the previous word to the channel controller
         SEND_WAIT:begin
             if (tx_busy) STATE <= SEND_WAIT;
             else         STATE <= SEND_DATA;    
         end
 
+        // Sending a data word to the channel controller
         SEND_DATA:begin
             tx_ready <= 1'b1;
             tx_data  <= out_data;
@@ -169,7 +173,7 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
             end
         end
 
-    // Проверка количества отправленных информационных слов
+        // Checking the number of data words sent
         CHECK_NUM:begin
             clk_rd  <= 1'b0;
             if (cnt_word == num_word_buf) begin
@@ -184,7 +188,7 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
             end
         end
 
-    // Окончание передачи всей информации на контроллер канала
+        // Finishing the transfer of all information to the channel controller
         END_WAIT:begin
             if (tx_busy) STATE <= END_WAIT;
             else         STATE <= IDLE;
@@ -194,5 +198,3 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
 end
 
 endmodule
-
- 

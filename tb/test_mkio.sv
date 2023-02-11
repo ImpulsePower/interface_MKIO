@@ -2,41 +2,58 @@
 
 module tb ();
 
-logic clk;
-logic reset;
-//1553B - channel A
+logic        clk;
+logic        reset;
+//MKIO interface - channel A
 logic        DI1A, DI0A;
 logic        DO1A, DO0A;
 logic        RX_STROB_A;
 logic        TX_INHIBIT_A;
-//1553B - channel B
+//MKIO interface - channel B
 logic        DI1B, DI0B;
 logic        DO1B, DO0B;
 logic        RX_STROB_B;
 logic        TX_INHIBIT_B;
 //MEM DEV 2 interface
-logic [4:0]   addr_rd_dev2;
-logic         clk_rd_dev2;
+logic [4:0]  addr_rd_dev2;
+logic        clk_rd_dev2;
 logic [15:0] out_data_dev2;
-logic         busy_dev2;
+logic        busy_dev2;
 //MEM DEV 4 interface
-logic [4:0]   addr_wr_dev4;
-logic [15:0]  in_data_dev4;
-logic         clk_wr_dev4;
-logic         we_dev4;
-logic         busy_dev4;
+logic [4:0]  addr_wr_dev4;
+logic [15:0] in_data_dev4;
+logic        clk_wr_dev4;
+logic        we_dev4;
+logic        busy_dev4;
 
 mkio DUT (
-    clk, reset,
+    .clk           (clk), 
+    .reset         (reset),
     //MKIO interface - channel A
-    DI1A, DI0A, DO1A, DO0A,
-    RX_STROB_A,TX_INHIBIT_A,
+    .DI1A          (DI1A), 
+    .DI0A          (DI0A), 
+    .DO1A          (DO1A), 
+    .DO0A          (DO0A),
+    .RX_STROB_A    (RX_STROB_A),
+    .TX_INHIBIT_A  (TX_INHIBIT_A),
     //MKIO interface - channel B
-    DI1B, DI0B, DO1B, DO0B,
-    RX_STROB_B, TX_INHIBIT_B,
-    //Memories interface
-    addr_rd_dev2, clk_rd_dev2, out_data_dev2, busy_dev2,
-    addr_wr_dev4, in_data_dev4, clk_wr_dev4, we_dev4, busy_dev4
+    .DI1B          (DI1B), 
+    .DI0B          (DI0B), 
+    .DO1B          (DO1B), 
+    .DO0B          (DO0B),
+    .RX_STROB_B    (RX_STROB_B), 
+    .TX_INHIBIT_B  (TX_INHIBIT_B),
+    //MEM DEV 2 interface
+    .addr_rd_dev2  (addr_rd_dev2), 
+    .clk_rd_dev2   (clk_rd_dev2), 
+    .out_data_dev2 (out_data_dev2), 
+    .busy_dev2     (busy_dev2),
+    //MEM DEV 4 interface
+    .addr_wr_dev4  (addr_wr_dev4), 
+    .in_data_dev4  (in_data_dev4), 
+    .clk_wr_dev4   (clk_wr_dev4), 
+    .we_dev4       (we_dev4), 
+    .busy_dev4     (busy_dev4)
 );
 
 logic [15:0] tb_array_dev2 [0:31];
@@ -181,7 +198,7 @@ initial
 
         #10000; //wait 10 us
 
-        //packet for subaddr 2
+        //package for subaddr 2
         $display("\n");
         $display("*************************");
         $display("*** TESTING SUBADDR 2 ***");
@@ -213,7 +230,7 @@ initial
             write_ram4(tb_array_dev4[i],i);
             $display("Write MEM_DEV4, addr = %d, data = %h", i, tb_array_dev4[i]);
         end
-        //packet for subaddr 4
+        //package for subaddr 4
         word_transmit (1,{5'd1,1'b1,5'd4,5'd5});
         #10000;
         $display("\n");

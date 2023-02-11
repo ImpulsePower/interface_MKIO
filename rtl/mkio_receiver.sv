@@ -1,4 +1,5 @@
-module mkio_receiver (
+module mkio_receiver 
+(
     input  logic clk,
     input  logic reset,
     input  logic DI1, DI0,
@@ -8,7 +9,7 @@ module mkio_receiver (
     output logic parity_error
 );
 
-// Модуль синхронизации
+// Synchronization module
 logic [2:0] pos_shift_reg;
 logic [2:0] neg_shift_reg;
 
@@ -22,7 +23,7 @@ always_ff @ (posedge clk or posedge reset) begin
     end
 end
 
-// Детектирование начала приёма
+// Detecting the start of receiving
 logic det_sig;
 
 always_ff @ (posedge clk or posedge reset) begin
@@ -35,7 +36,7 @@ always_ff @ (posedge clk or posedge reset) begin
     endcase
 end
 
-// Фиксация момента начало приёма элемента манч.кода
+// Fixing the moment of the beginning of the Manchester code element receiving
 logic [2:0] sig_shift_reg;
 logic       in_data;
 logic       reset_length_bit;
@@ -47,7 +48,7 @@ end
 assign in_data = sig_shift_reg[2];
 assign reset_length_bit = sig_shift_reg[2] ^ sig_shift_reg[1];
 
-// Сборка манч.кода в сдвиговый регистр manchester_reg
+// Assembling Manchester code into a shift register: manchester_reg
 logic        middle_bit;
 logic [2:0]  length_bit;
 logic [39:0] manchester_reg;
@@ -66,7 +67,7 @@ always_ff @ (posedge clk or posedge reset) begin
     end
 end
 
-// Выделяет из регистра сигнал паритета, тип синхронизации и поле данных
+// Selects the parity signal, clock type and data field from the register
 logic true_data_packet;
 logic [15:0] data_buf;
 logic parity_buf;
@@ -87,7 +88,7 @@ endgenerate
 assign parity_buf = manchester_reg[1];
 assign cd_buf = manchester_reg[35];
 
-// По окончанию приёма выставляеются на выход принятые данные
+// At the end of the reception the received data is output
 logic ena_wr;
 always_ff @ (posedge clk or posedge reset) begin
     if (reset) begin

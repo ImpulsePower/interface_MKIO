@@ -1,4 +1,5 @@
-module mkio_transmitter (
+module mkio_transmitter 
+(
 	input  logic        clk,
 	input  logic        reset,
 	input  logic        imp_send,
@@ -17,8 +18,7 @@ logic [31:0] data_manchester;
 logic [39:0] word_manchester;
 logic        parity;
 
-// Формирование манч. посылки
-// Преобразование поле данных в манчестерский вид 
+// Forming a Manchester package and converting the data field into a Manchester form
 genvar i;
 generate for (i = 0; i < 16; i = i + 1) begin : gen_manchester
         assign data_manchester[2*i]     = ~data_buf[i];
@@ -26,8 +26,8 @@ generate for (i = 0; i < 16; i = i + 1) begin : gen_manchester
     end
 endgenerate
 
-// Выбор синхросигнала > присвоение поле данных > 
-// > присвоение пары элементов в зав. от бит паритета > вычисление бита паритета
+// Synchro selection > assignment of the data field > assigning a pair of elements 
+// depending on the parity bit > calculating the parity bit
 assign word_manchester[39:34] = (cd_buf) ? 6'b000111 : 6'b111000;
 assign word_manchester[33:2] = data_manchester;
 assign word_manchester[1:0] = (parity) ? 2'b10 : 2'b01;
@@ -42,25 +42,25 @@ always_ff @ (posedge clk or posedge reset) begin
         count_bit  <= 6'd0;
     end
     else begin
-        // "Защелкивание" входных данных для передачи по приходу imp_send
+        // "Latching" the input data to be transmitted on arrival imp_send
         if (imp_send) begin
             data_buf <= data_send;
             cd_buf <= cd_send; 
         end
-        // Подсчёт длительности элемента манч.кода
+        // Calculating the duration of a Manchester code
         if (imp_send) length_bit <= 3'd0;
         else if (busy_send) length_bit <= length_bit + 1'b1;
-        // декремент номера элемента последовательности манч.кода count_bit
+        // Decrement of Manchester code sequence element number: count_bit
         if (imp_send) count_bit <= 6'd39;
         else if ((count_bit != 6'd0) & (length_bit == 3'd7))
         count_bit <= count_bit - 1'b1;
-        // Процесс передачи манч.кода и изменением статуса линии 
+        // Manchester Code Transmission Process and change of line status 
         if (imp_send) busy_send <= 1'b1;
         else if ((count_bit == 6'd0) & (length_bit == 3'd7)) busy_send <= 1'b0;
     end
 end
 
-// Выставление разряда посылки, готовой на передачу
+// Discharging a parcel ready for transfer
 always_ff @(posedge clk)
 begin
     if (busy_send) begin

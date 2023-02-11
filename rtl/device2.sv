@@ -20,7 +20,7 @@ module device2
     output logic        busy
 );
 
-// Подмодуль памяти
+// Sub-module of memory
 mem_dev2 mem_dev2_sb (
     .data      (in_data),
     .wraddress (addr_wr),
@@ -34,7 +34,7 @@ mem_dev2 mem_dev2_sb (
 logic [4:0]  addr_wr;
 logic        clk_wr;
 logic        we;
-// Приём данных из памяти
+// Receiving data from memory
 logic [15:0] in_data;
 assign in_data = rx_data;
 
@@ -45,7 +45,7 @@ logic [7:0] cnt_pause;
 // Delays
 logic [1:0] delay_impulse = 2'h2; //2 clk
 
-// Расчёт количество слов которые необходимо принять (N/COM МКИО ГОСТ)
+// Calculation of the number of words to be taken (N/COM)
 logic [4:0] num_word = 5'd0;
 logic [4:0] num_word_buf = 5'd0;
 
@@ -55,7 +55,7 @@ always @ (num_word)
         default: num_word_buf = num_word - 1'b1;
     endcase
 
-// Список состояний конечного автомата
+// List of states of a state machine
 typedef enum logic [3:0] {   
     IDLE      = 4'h0,     
     INIT      = 4'h1,  
@@ -94,7 +94,7 @@ always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
     end
 
     else case (STATE)
-    // Состояние ожидания импульса на старт приема информационных слов
+        // State of waiting for a pulse to start receiving data word
         IDLE:begin
             STATE     <= IDLE;
             addr_wr   <= 5'd0;
@@ -106,27 +106,27 @@ always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
             cnt_pause <= 8'h0;
         end
 
-    // Начало обработки информационного слова
+        // Start of data word processing
         INIT:begin
             STATE    <= DATA_WAIT;
             num_word <= rx_data[4:0];
             if (p_error) cnt_p <= cnt_p + 1'b1;
         end
         
-    // Состояние ожидания следующего информационного слова
+        // Waiting state for the next data word
         DATA_WAIT:begin
             if (rx_done) STATE <= DATA_SAVE;
             else         STATE <= DATA_WAIT;
         end
 
-    // Состояние сохранения информационного слова
+        // The state of saving of the data word
         DATA_SAVE:begin
             STATE  <= CHECK_NUM;
             clk_wr <= 1'b1;
             if (p_error) cnt_p <= cnt_p + 1'b1;
         end
 
-    // Состояние проверки количества принятых информационных слов
+        // Status of checking the number of data words received
         CHECK_NUM:begin
             clk_wr <= 1'b0;
             if (cnt_word == num_word_buf) begin
@@ -140,13 +140,13 @@ always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
             end
         end
 
-    // Состояние подготовки ответного слова
+        // Preparing the status word
         LOAD_OS:begin
             STATE   <= SEND_OS;
             tx_cd   <= 1'b0;
         end
 
-    // Состояние отправки ответного слова на контроллер канала
+        // Sending a status word to the channel controller
         SEND_OS:begin
             tx_ready <= 1'b1;
             tx_data  <= {ADDRESS, | cnt_p, 10'd0};
@@ -160,6 +160,7 @@ always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
             end
         end
 
+        // Finishing the transfer of all information to the channel controller
         END_WAIT:begin 
             if (tx_busy) STATE <= END_WAIT;
             else         STATE <= IDLE;
@@ -169,5 +170,3 @@ always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
 end
 
 endmodule
-
- 
