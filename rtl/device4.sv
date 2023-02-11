@@ -1,9 +1,9 @@
 module device4 
 # ( parameter [4:0] ADDRESS = 5'd1 ) 
 (
-    input  logic clk,
-    input  logic reset,
-    input  logic start,
+    input  logic        clk,
+    input  logic        reset,
+    input  logic        start,
     // RX INTERFACE
     input  logic [15:0] rx_data,
     input  logic        p_error,
@@ -36,23 +36,8 @@ logic [15:0] out_data;
 logic [15:0] rd_data;
 logic        clk_rd;
 
-// typedef enum logic [3:0] {S0, S1, S2} statetype;
-
-parameter IDLE_STATE       = 8'd0,
-          START_STATE      = 8'd1,
-          PAUSE_WAIT_STATE = 8'd2,
-          LOAD_OS_STATE    = 8'd3,
-          SEND_OS_STATE    = 8'd4,
-          READ_DATA_STATE  = 8'd5,
-          PREP_DATA_STATE  = 8'd6,
-          SEND_WAIT_STATE  = 8'd7,
-          SEND_DATA_STATE  = 8'd8,
-          CHECK_NUM_STATE  = 8'd9,
-          END_WAIT_STATE   = 8'd10;
-
 logic [4:0] cnt_word;
 logic [5:0] cnt_p;
-logic [7:0] STATE;
 
 logic [7:0] cnt_pause;
 // Delays
@@ -68,10 +53,26 @@ always @ (num_word)
         default: num_word_buf = num_word - 1'b1;
     endcase
 
-always @ (posedge clk or posedge start or posedge reset) begin : state_machine
+// Список состояний конечного автомата
+typedef enum logic [3:0] {   
+    IDLE       = 4'h0,
+    INIT       = 4'h1,
+    PAUSE_WAIT = 4'h2,
+    LOAD_OS    = 4'h3,
+    SEND_OS    = 4'h4,
+    READ_DATA  = 4'h5,
+    PREP_DATA  = 4'h6,
+    SEND_WAIT  = 4'h7,
+    SEND_DATA  = 4'h8,
+    CHECK_NUM  = 4'h9,
+    END_WAIT   = 4'hA
+}   statetype;
+statetype STATE;
+
+always @ (posedge clk, posedge start, posedge reset) begin : state_machine
 
     if (reset) begin
-        STATE <= IDLE_STATE;
+        STATE    <= IDLE;
         cnt_p    <= 6'd0;
         tx_data  <= 16'd0;
         clk_rd   <= 1'b0;
@@ -80,7 +81,7 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
     end
 
     else if (start)begin
-        STATE <= START_STATE;
+        STATE    <= INIT;
         tx_data  <= 16'd0;
         cnt_p    <= 6'd0;
         busy     <= 1'b1;
@@ -91,70 +92,71 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
 
     else case (STATE)
     // Состояние ожидания импульса на старт приема информационных слов
-        IDLE_STATE:begin
-            STATE     <= IDLE_STATE;
+        IDLE:begin
+            STATE     <= IDLE;
             tx_ready  <= 1'b0;
             tx_data   <= 16'd0;
             busy      <= 1'b0;
             cnt_pause <= 8'h0;
-            addr_rd  <= 1'b0;
+            addr_rd   <= 1'b0;
         end
 
     // Сохранение количества информационных слов
-        START_STATE:begin
+        INIT:begin
+            STATE    <= PAUSE_WAIT;
             num_word <= rx_data[4:0];
             if (p_error) cnt_p <= cnt_p + 1'b1;
-            STATE <= PAUSE_WAIT_STATE;
         end
 
     // Отсчитывание кол.тактов, которое соответствует паузе между КС и ОС
-        PAUSE_WAIT_STATE:begin
+        PAUSE_WAIT:begin
             if (clk) begin
                 cnt_pause <= cnt_pause + 1'h1;
-                if (cnt_pause == delay_CW_RW) STATE <= LOAD_OS_STATE;
+                if (cnt_pause == delay_CW_RW) 
+                    STATE <= LOAD_OS;
             end
         end
 
     // Подготовка ответного слова (адрес устройства, биты статуса)
-        LOAD_OS_STATE:begin
-            STATE <= SEND_OS_STATE;
+        LOAD_OS:begin
+            STATE <= SEND_OS;
             tx_cd   <= 1'b0;
             tx_data <= {ADDRESS, | cnt_p, 10'd0};
         end
 
     // Отправка ответного слова на контроллер канала (tx_ready = '1')
-        SEND_OS_STATE:begin
+        SEND_OS:begin
             tx_ready <= 1'b1;
             if (clk) begin
                 cnt_pause <= cnt_pause + 1'h1;
                 if (cnt_pause == delay_impulse) begin
                     cnt_pause <= 8'h0;
-                    tx_ready <= 1'b0;
-                    STATE <= READ_DATA_STATE;
+                    tx_ready  <= 1'b0;
+                    STATE     <= READ_DATA;
                 end      
             end
         end
 
     // Чтение данных из внутренней ОЗУ
-        READ_DATA_STATE:begin
+        READ_DATA:begin
             clk_rd <= 1'b1;
-            STATE  <= PREP_DATA_STATE;
+            STATE  <= PREP_DATA;
         end
 
     // Подготовка инф.слова для передачи на контроллер канала
-        PREP_DATA_STATE:begin
+        PREP_DATA:begin
             clk_rd  <= 1'b0;
             tx_cd   <= 1'b1;
-            STATE   <= SEND_WAIT_STATE;
+            STATE   <= SEND_WAIT;
         end
 
     // Ожидание окончания отправки предыдущего слова на контроллер канала
-        SEND_WAIT_STATE:begin
-            if (tx_busy) STATE <= SEND_WAIT_STATE;
-            else         STATE <= SEND_DATA_STATE;    
+        SEND_WAIT:begin
+            if (tx_busy) STATE <= SEND_WAIT;
+            else         STATE <= SEND_DATA;    
         end
 
-        SEND_DATA_STATE:begin
+        SEND_DATA:begin
             tx_ready <= 1'b1;
             tx_data  <= out_data;
             if (clk) begin
@@ -162,30 +164,30 @@ always @ (posedge clk or posedge start or posedge reset) begin : state_machine
                 if (cnt_pause == delay_impulse) begin
                     cnt_pause <= 8'h0;
                     tx_ready  <= 1'b0;
-                    STATE <= CHECK_NUM_STATE;
+                    STATE     <= CHECK_NUM;
                 end      
             end
         end
 
     // Проверка количества отправленных информационных слов
-        CHECK_NUM_STATE:begin
+        CHECK_NUM:begin
             clk_rd  <= 1'b0;
             if (cnt_word == num_word_buf) begin
                 cnt_word <= 5'd0;
                 addr_rd  <= 1'b0;
-                STATE    <= END_WAIT_STATE; 
+                STATE    <= END_WAIT; 
             end
             else begin
                 addr_rd  <= addr_rd + 1'b1;
                 cnt_word <= cnt_word + 1'b1;
-                STATE    <= READ_DATA_STATE; 
+                STATE    <= READ_DATA; 
             end
         end
 
     // Окончание передачи всей информации на контроллер канала
-        END_WAIT_STATE:begin
-            if (tx_busy) STATE <= END_WAIT_STATE;
-            else         STATE <= IDLE_STATE;
+        END_WAIT:begin
+            if (tx_busy) STATE <= END_WAIT;
+            else         STATE <= IDLE;
         end
                           
     endcase
