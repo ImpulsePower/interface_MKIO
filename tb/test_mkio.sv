@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module tb ();
+module test_mkio ();
 
 logic        clk;
 logic        reset;
@@ -170,6 +170,9 @@ initial
 
 initial
     begin
+        
+        reset = 0;
+        repeat (10) @(posedge clk);
         reset = 1;
         repeat (10) @(posedge clk);
         reset = 0;
@@ -247,7 +250,7 @@ initial
 
 initial begin
     $dumpfile("../sim/test_mkio.vcd");
-    $dumpvars(0, DUT);
+    $dumpvars(0, test_mkio);
 end
 
 endmodule

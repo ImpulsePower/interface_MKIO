@@ -41,7 +41,7 @@ mkio_transmitter transmitter_sb (
     .busy_send (tx_busy)
 );
 
-// Sub-module for receiving information by ICIO, which checks 
+// Sub-module for receiving information by MKIO, which checks 
 // the correctness of parcel, and determines which word is accepted (CW or IC)
 logic rx_cd, rx_done, parity_error;
 logic [15:0] rx_data;
@@ -103,7 +103,7 @@ end
 // Transmission of information from the RT to the channel controller
 logic [4:0] ena_reg = 5'd0;
 
-always_ff @(posedge clk16 or posedge reset) begin
+always_ff @(posedge clk16, posedge reset) begin
     if (reset) ena_reg <= 5'd0;
     else ena_reg <= {ena_reg[3:0], tx_busy};
 end

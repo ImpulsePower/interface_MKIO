@@ -85,14 +85,13 @@ assign dev4 = ((~rx_cd)
             &(wr_rd));
 
 // Mux for the transmitter
-logic sel = 1'b0;
+logic sel = 1'bz;
 
-always_ff @ (posedge clk) begin 
+always_comb
     case ({dev2, dev4})  
-        2'b10:sel <= 1'b0;  
-        2'b01:sel <= 1'b1; 
+        2'b10:sel = 1'b0;  
+        2'b01:sel = 1'b1; 
     endcase
-end
 
 assign tx_data  = (sel) ? tx_data_dev4  : tx_data_dev2;
 assign tx_cd    = (sel) ? tx_cd_dev4    : tx_cd_dev2;
