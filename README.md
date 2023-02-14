@@ -54,8 +54,8 @@ The structure of the project is shown below:
 ## Hardware Requirements
 
 * Intel / Altera EP3C25F324C6 
-* Total logic elements: 337
-* Total registers: 221
+* Total logic elements: 340
+* Total registers: 211
 * Total pins: 61
 * Total memory bits: 1024
 

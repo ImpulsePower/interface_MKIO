@@ -113,31 +113,29 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
         // Counting the number of cycles, which corresponds to the pause 
         // between the command word (CW) and status word (SW)
         PAUSE_WAIT:begin
-            if (clk) begin
-                cnt_pause <= cnt_pause + 1'h1;
-                if (cnt_pause == delay_CW_RW) 
-                    STATE <= LOAD_OS;
-            end
+            cnt_pause <= cnt_pause + 1'h1;
+            if (cnt_pause == delay_CW_RW) 
+                STATE <= LOAD_OS;
         end
 
         // Preparing the status word (device address, status bits)
         LOAD_OS:begin
-            STATE <= SEND_OS;
+            STATE   <= SEND_OS;
             tx_cd   <= 1'b0;
             tx_data <= {ADDRESS, | cnt_p, 10'd0};
         end
 
         // Sending a status word to the channel controller
         SEND_OS:begin
-            tx_ready <= 1'b1;
-            if (clk) begin
+            if (cnt_pause != delay_impulse) begin
+                tx_ready <= 1'b1;
                 cnt_pause <= cnt_pause + 1'h1;
-                if (cnt_pause == delay_impulse) begin
-                    cnt_pause <= 8'h0;
-                    tx_ready  <= 1'b0;
-                    STATE     <= READ_DATA;
-                end      
             end
+            else begin
+                cnt_pause <= 8'h0;
+                tx_ready  <= 1'b0;
+                STATE     <= READ_DATA;
+            end      
         end
 
         // Reading data from RAM
@@ -161,30 +159,30 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
 
         // Sending a data word to the channel controller
         SEND_DATA:begin
-            tx_ready <= 1'b1;
-            tx_data  <= out_data;
-            if (clk) begin
+            if (cnt_pause != delay_impulse) begin
+                tx_ready <= 1'b1;
+                tx_data  <= out_data;
                 cnt_pause <= cnt_pause + 1'h1;
-                if (cnt_pause == delay_impulse) begin
-                    cnt_pause <= 8'h0;
-                    tx_ready  <= 1'b0;
-                    STATE     <= CHECK_NUM;
-                end      
             end
+            else begin
+                cnt_pause <= 8'h0;
+                tx_ready  <= 1'b0;
+                clk_rd    <= 1'b0;
+                STATE     <= CHECK_NUM;                
+            end      
         end
 
         // Checking the number of data words sent
         CHECK_NUM:begin
-            clk_rd  <= 1'b0;
-            if (cnt_word == num_word_buf) begin
+            if (cnt_word != num_word_buf) begin
+                addr_rd  <= addr_rd + 1'b1;
+                cnt_word <= cnt_word + 1'b1;
+                STATE    <= READ_DATA;  
+            end
+            else begin
                 cnt_word <= 5'd0;
                 addr_rd  <= 1'b0;
                 STATE    <= END_WAIT; 
-            end
-            else begin
-                addr_rd  <= addr_rd + 1'b1;
-                cnt_word <= cnt_word + 1'b1;
-                STATE    <= READ_DATA; 
             end
         end
 

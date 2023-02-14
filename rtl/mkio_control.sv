@@ -1,5 +1,5 @@
 module mkio_control 
-# ( parameter [4:0] ADDRESS = 5'd1,
+# ( parameter [4:0] ADDRESS   = 5'd1,
     parameter [4:0] SUBADDR_2 = 5'd2, 
     parameter [4:0] SUBADDR_4 = 5'd4
 ) (
@@ -31,6 +31,7 @@ module mkio_control
 // Sub-module of remote terminals (RT) 2
 logic [15:0] tx_data_dev2; 
 logic tx_cd_dev2, tx_ready_dev2;
+bit dev2;
 
 device2 device2_sb (
     .clk      (clk),
@@ -52,6 +53,7 @@ device2 device2_sb (
 // Sub-module of remote terminals (RT) 4
 logic [15:0] tx_data_dev4; 
 logic tx_cd_dev4, tx_ready_dev4;
+bit dev4;
 
 device4 device4_sb (
     .clk      (clk),
@@ -71,6 +73,7 @@ device4 device4_sb (
 );
 
 // Message to the channel controller that the command word (CW) came
+bit wr_rd;
 assign wr_rd = rx_data[10];
 assign dev2 = ((~rx_cd)
             &(rx_data[15:11] == ADDRESS)
@@ -87,11 +90,12 @@ assign dev4 = ((~rx_cd)
 // Mux for the transmitter
 logic sel = 1'bz;
 
-always_comb
+always_ff @ (posedge clk) begin
     case ({dev2, dev4})  
         2'b10:sel = 1'b0;  
-        2'b01:sel = 1'b1; 
+        2'b01:sel = 1'b1;
     endcase
+end
 
 assign tx_data  = (sel) ? tx_data_dev4  : tx_data_dev2;
 assign tx_cd    = (sel) ? tx_cd_dev4    : tx_cd_dev2;

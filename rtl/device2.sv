@@ -31,9 +31,9 @@ mem_dev2 mem_dev2_sb (
     .q         (out_data)
 );
 
-logic [4:0]  addr_wr;
-logic        clk_wr;
-logic        we;
+logic [4:0] addr_wr;
+logic       clk_wr;
+logic       we;
 // Receiving data from memory
 logic [15:0] in_data;
 assign in_data = rx_data;
@@ -128,15 +128,15 @@ always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
 
         // Status of checking the number of data words received
         CHECK_NUM:begin
-            clk_wr <= 1'b0;
-            if (cnt_word == num_word_buf) begin
-                cnt_word <= 5'd0;
-                STATE    <= LOAD_OS; 
+            if (cnt_word != num_word_buf) begin
+                addr_wr  <= addr_wr + 1'b1;
+                cnt_word <= cnt_word + 1'b1;
+                STATE    <= DATA_WAIT;
+                clk_wr   <= 1'b0;  
             end
             else begin
-                addr_wr <= addr_wr + 1'b1;
-                cnt_word <= cnt_word + 1'b1;
-                STATE    <= DATA_WAIT; 
+                cnt_word <= 5'd0;
+                STATE    <= LOAD_OS; 
             end
         end
 
@@ -148,16 +148,16 @@ always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
 
         // Sending a status word to the channel controller
         SEND_OS:begin
-            tx_ready <= 1'b1;
-            tx_data  <= {ADDRESS, | cnt_p, 10'd0};
-            if (clk) begin
+            if (cnt_pause != delay_impulse) begin
+                tx_ready <= 1'b1;
+                tx_data  <= {ADDRESS, | cnt_p, 10'd0};
                 cnt_pause <= cnt_pause + 1'h1;
-                if (cnt_pause == delay_impulse) begin
-                    STATE <= END_WAIT;
-                    cnt_pause <= 2'h0;
-                    tx_ready  <= 1'b0;
-                end      
             end
+            else begin
+                STATE <= END_WAIT;
+                cnt_pause <= 2'h0;
+                tx_ready  <= 1'b0;
+            end      
         end
 
         // Finishing the transfer of all information to the channel controller
