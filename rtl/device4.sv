@@ -72,7 +72,7 @@ typedef enum logic [3:0] {
 statetype STATE;
 
 always @ (posedge clk, posedge start, posedge reset) begin : state_machine
-
+    
     if (reset) begin
         STATE    <= IDLE;
         cnt_p    <= 6'd0;

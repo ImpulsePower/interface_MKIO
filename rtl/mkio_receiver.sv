@@ -16,7 +16,8 @@ logic [2:0] neg_shift_reg;
 always_ff @ (posedge clk or posedge reset) begin
     if (reset) begin
         pos_shift_reg <= 3'd0;
-        neg_shift_reg <= 3'd0; end
+        neg_shift_reg <= 3'd0; 
+    end
     else begin
         pos_shift_reg <= {pos_shift_reg[1:0], DI1};
         neg_shift_reg <= {neg_shift_reg[1:0], DI0}; 

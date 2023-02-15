@@ -28,10 +28,12 @@ endgenerate
 
 // Synchro selection > assignment of the data field > assigning a pair of elements 
 // depending on the parity bit > calculating the parity bit
-assign word_manchester[39:34] = (cd_buf) ? 6'b000111 : 6'b111000;
-assign word_manchester[33:2] = data_manchester;
-assign word_manchester[1:0] = (parity) ? 2'b10 : 2'b01;
-assign parity = ~(^ data_buf);
+always_comb begin : manchester
+    word_manchester[39:34] = (cd_buf) ? 6'b000111 : 6'b111000;
+    word_manchester[33:2]  = data_manchester;
+    word_manchester[1:0]   = (parity) ? 2'b10 : 2'b01;
+    parity = ~(^ data_buf);
+end
 
 always_ff @ (posedge clk or posedge reset) begin
     if (reset) begin
@@ -45,7 +47,7 @@ always_ff @ (posedge clk or posedge reset) begin
         // "Latching" the input data to be transmitted on arrival imp_send
         if (imp_send) begin
             data_buf <= data_send;
-            cd_buf <= cd_send; 
+            cd_buf   <= cd_send; 
         end
         // Calculating the duration of a Manchester code
         if (imp_send) length_bit <= 3'd0;

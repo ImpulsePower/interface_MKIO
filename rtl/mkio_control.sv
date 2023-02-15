@@ -30,8 +30,7 @@ module mkio_control
 
 // Sub-module of remote terminals (RT) 2
 logic [15:0] tx_data_dev2; 
-logic tx_cd_dev2, tx_ready_dev2;
-bit dev2;
+logic tx_cd_dev2, tx_ready_dev2, dev2;
 
 device2 device2_sb (
     .clk      (clk),
@@ -52,8 +51,7 @@ device2 device2_sb (
 
 // Sub-module of remote terminals (RT) 4
 logic [15:0] tx_data_dev4; 
-logic tx_cd_dev4, tx_ready_dev4;
-bit dev4;
+logic tx_cd_dev4, tx_ready_dev4, dev4;
 
 device4 device4_sb (
     .clk      (clk),
@@ -88,7 +86,7 @@ assign dev4 = ((~rx_cd)
             &(wr_rd));
 
 // Mux for the transmitter
-logic sel = 1'bz;
+logic sel = 1'bx;
 
 always_ff @ (posedge clk) begin
     case ({dev2, dev4})  
@@ -97,9 +95,11 @@ always_ff @ (posedge clk) begin
     endcase
 end
 
-assign tx_data  = (sel) ? tx_data_dev4  : tx_data_dev2;
-assign tx_cd    = (sel) ? tx_cd_dev4    : tx_cd_dev2;
-assign tx_ready = (sel) ? tx_ready_dev4 : tx_ready_dev2;
+always_comb begin : tx_interface
+    tx_data  = (sel) ? tx_data_dev4  : tx_data_dev2;
+    tx_cd    = (sel) ? tx_cd_dev4    : tx_cd_dev2;
+    tx_ready = (sel) ? tx_ready_dev4 : tx_ready_dev2;
+end
 
 endmodule
  
