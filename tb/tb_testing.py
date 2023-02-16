@@ -37,6 +37,7 @@ class TestBench():
             f3_data = f3.read()
         with open('../rtl/mkio.sv', 'a', encoding="utf-8") as f0:
             f0.writelines([
+            """\n`include "../rtl/reset_sync.sv" """,
             """\n`include "../rtl/mkio_control.sv" """,
             """\n`include "../rtl/mkio_receiver.sv" """,
             """\n`include "../rtl/mkio_transmitter.sv"\n """

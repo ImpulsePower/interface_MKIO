@@ -1,7 +1,7 @@
 module mkio 
 (
     input  logic        clk,
-    input  logic        reset,
+    input  logic        rst,
     // MKIO interface - channel A
     input  logic        DI1A, DI0A, 
     output logic        DO1A, DO0A, 
@@ -25,20 +25,29 @@ module mkio
     output logic        busy_dev4
 );
 
+// Reset synchronizer sub-module
+logic reset;
+
+reset_sync reset_sync_sb (
+   .clk     (clk),
+   .rst     (rst),
+   .reset   (reset) 
+);
+
 // Sub-module for serial transmission of Parallel 
 // Manchester code data in the form of an external signal
 logic tx_ready, tx_cd, tx_busy;
 logic [15:0] tx_data;
 
 mkio_transmitter transmitter_sb (
-    .clk       (clk16),
-    .reset     (reset),
-    .DO1       (DO1), 
-    .DO0       (DO0),
-    .imp_send  (tx_ready),
-    .cd_send   (tx_cd),
-    .data_send (tx_data),
-    .busy_send (tx_busy)
+    .clk          (clk16),
+    .reset        (reset),
+    .DO1          (DO1), 
+    .DO0          (DO0),
+    .imp_send     (tx_ready),
+    .cd_send      (tx_cd),
+    .data_send    (tx_data),
+    .busy_send    (tx_busy)
 );
 
 // Sub-module for receiving information by MKIO, which checks 

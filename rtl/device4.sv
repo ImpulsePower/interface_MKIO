@@ -22,13 +22,13 @@ module device4
 
 // Sub-module of memory
 mem_dev4 mem_dev4_sb (
-    .data      (in_data),
-    .wraddress (addr_wr),
-    .wren      (we),
-    .rdaddress (addr_rd),
-    .wrclock   (clk_wr), 
-    .rdclock   (clk_rd), 
-    .q         (out_data)
+    .data        (in_data),
+    .read_addr   (addr_rd),
+    .write_addr  (addr_wr),
+    .we          (we),
+    .read_clock  (clk_rd), 
+    .write_clock (clk_wr), 
+    .q           (out_data)
 );
 
 logic [4:0]  addr_rd;
@@ -71,22 +71,19 @@ typedef enum logic [3:0] {
 }   statetype;
 statetype STATE;
 
-always @ (posedge clk, posedge start, posedge reset) begin : state_machine
+always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
     
     if (reset) begin
         STATE    <= IDLE;
         cnt_p    <= 6'd0;
-        tx_data  <= 16'd0;
         clk_rd   <= 1'b0;
         cnt_word <= 5'd0;
         addr_rd  <= 1'b0;
     end
 
-    else if (start)begin
+    else if (start) begin
         STATE    <= INIT;
-        tx_data  <= 16'd0;
         cnt_p    <= 6'd0;
-        busy     <= 1'b1;
         addr_rd  <= 1'b0;
         clk_rd   <= 1'b0;
         cnt_word <= 5'd0;
@@ -105,6 +102,8 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
 
         // Save the number of data words (DW)
         INIT:begin
+            tx_data  <= 16'd0;
+            busy     <= 1'b1;
             STATE    <= PAUSE_WAIT;
             num_word <= rx_data[4:0];
             if (p_error) cnt_p <= cnt_p + 1'b1;
@@ -128,7 +127,7 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
         // Sending a status word to the channel controller
         SEND_OS:begin
             if (cnt_pause != delay_impulse) begin
-                tx_ready <= 1'b1;
+                tx_ready  <= 1'b1;
                 cnt_pause <= cnt_pause + 1'h1;
             end
             else begin
@@ -160,8 +159,8 @@ always @ (posedge clk, posedge start, posedge reset) begin : state_machine
         // Sending a data word to the channel controller
         SEND_DATA:begin
             if (cnt_pause != delay_impulse) begin
-                tx_ready <= 1'b1;
-                tx_data  <= out_data;
+                tx_ready  <= 1'b1;
+                tx_data   <= out_data;
                 cnt_pause <= cnt_pause + 1'h1;
             end
             else begin

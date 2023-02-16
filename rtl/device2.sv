@@ -22,13 +22,13 @@ module device2
 
 // Sub-module of memory
 mem_dev2 mem_dev2_sb (
-    .data      (in_data),
-    .wraddress (addr_wr),
-    .wren      (we),
-    .rdaddress (addr_rd),
-    .wrclock   (clk_wr), 
-    .rdclock   (clk_rd), 
-    .q         (out_data)
+    .data        (in_data),
+    .read_addr   (addr_rd),
+    .write_addr  (addr_wr),
+    .we          (we),
+    .read_clock  (clk_rd), 
+    .write_clock (clk_wr), 
+    .q           (out_data)
 );
 
 logic [4:0] addr_wr;
@@ -71,7 +71,7 @@ statetype STATE;
 always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
 
     if (reset) begin
-        STATE <= IDLE; 
+        STATE    <= IDLE; 
         tx_data  <= 16'd0;
         addr_wr  <= 5'd0;
         we       <= 1'b0;
@@ -83,7 +83,7 @@ always_ff @ (posedge clk, posedge start, posedge reset) begin : state_machine
     end
 
     else if (start) begin
-        STATE <= INIT; 
+        STATE    <= INIT; 
         addr_wr  <= 5'd0;
         we       <= 1'b1;
         clk_wr   <= 1'b0;

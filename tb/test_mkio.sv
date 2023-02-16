@@ -28,7 +28,7 @@ logic        busy_dev4;
 
 mkio DUT (
     .clk           (clk), 
-    .reset         (reset),
+    .rst           (reset),
     //MKIO interface - channel A
     .DI1A          (DI1A), 
     .DI0A          (DI0A), 
