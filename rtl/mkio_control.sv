@@ -1,5 +1,6 @@
 module mkio_control 
-# ( parameter [4:0] ADDRESS   = 5'd1,
+# ( 
+    parameter [4:0] ADDRESS   = 5'd1,
     parameter [4:0] SUBADDR_2 = 5'd2, 
     parameter [4:0] SUBADDR_4 = 5'd4
 ) (
@@ -70,20 +71,36 @@ device4 device4_sb (
     .busy     (busy_dev4)
 );
 
-// Message to the channel controller that the command word (CW) came
-bit wr_rd;
-assign wr_rd = rx_data[10];
-assign dev2 = ((~rx_cd)
-            &(rx_data[15:11] == ADDRESS)
-            &(rx_data[9:5] == SUBADDR_2)
-            &(rx_done)
-            &(~wr_rd));
+enable_sync enable_sync_sb1 (
+    .enable_in  (dev2_raw),
+    .clk        (clk),
+    .reset      (reset),
+    .enable_out (dev2)
+);
 
-assign dev4 = ((~rx_cd)
-            &(rx_data[15:11] == ADDRESS)
-            &(rx_data[9:5] == SUBADDR_4)
-            &(rx_done)
-            &(wr_rd));
+enable_sync enable_sync_sb2 (
+    .enable_in  (dev4_raw),
+    .clk        (clk),
+    .reset      (reset),
+    .enable_out (dev4)
+);
+
+// Message to the channel controller that the command word (CW) came
+logic wr_rd, dev2_raw, dev4_raw;
+
+assign wr_rd = rx_data[10];
+
+assign dev2_raw = ((~rx_cd)
+                &(rx_data[15:11] == ADDRESS)
+                &(rx_data[9:5] == SUBADDR_2)
+                &(rx_done)
+                &(~wr_rd));
+
+assign dev4_raw = ((~rx_cd)
+                &(rx_data[15:11] == ADDRESS)
+                &(rx_data[9:5] == SUBADDR_4)
+                &(rx_done)
+                &(wr_rd));
 
 // Mux for the transmitter
 logic sel = 1'bx;
@@ -102,4 +119,3 @@ always_comb begin : tx_interface
 end
 
 endmodule
- 

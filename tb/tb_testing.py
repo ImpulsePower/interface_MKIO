@@ -44,7 +44,8 @@ class TestBench():
         with open('../rtl/mkio_control.sv', 'a', encoding="utf-8") as f1:
             f1.writelines([
             """\n`include "../rtl/device2.sv" """,
-            """\n`include "../rtl/device4.sv"\n """
+            """\n`include "../rtl/device4.sv" """,
+            """\n`include "../rtl/enable_sync.sv"\n """
             ])
         with open('../rtl/device2.sv', 'a', encoding="utf-8") as f2:
             f2.write("""\n`include "../rtl/mem_dev2.sv"\n """)

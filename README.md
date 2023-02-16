@@ -54,8 +54,8 @@ The structure of the project is shown below:
 ## Hardware Requirements
 
 * Intel / Altera EP3C25F324C6 
-* Total logic elements: 340
-* Total registers: 211
+* Total logic elements: 345
+* Total registers: 219
 * Total pins: 61
 * Total memory bits: 1024
 
@@ -63,4 +63,4 @@ The structure of the project is shown below:
 
 * MIL-STD-1553 Tutorial (in doc)
 * МКИО ГОСТ Р 52070-2003 (in doc)
-* Разработка контроллера протокола MIL-STD-1553B на ПЛИС [1-4] (highly recommend)
+* Разработка контроллера протокола MIL-STD-1553B на ПЛИС [1-4]
