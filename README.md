@@ -46,6 +46,7 @@ The structure of the project is shown below:
 * device4.sv          : Terminal devices with subadress 4
 * mem_dev2.sv         : Dual-port memory for terminal device 2
 * mem_dev4.sv         : Dual-port memory for terminal device 4
+* enable_sync.sv      : Module for eliminate clock jitter 
 
 /tb:
 * tb_testing.py       : Python script to run a testbench
