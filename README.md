@@ -51,7 +51,7 @@ The structure of the project is shown below:
 
 /tb:
 * tb_testing.py       : Python script to run a testbench
-* test_mkio.sv        : Testbench
+* test_mkio.sv        : Testbench for top-level module
 
 ## Hardware Requirements
 
@@ -66,3 +66,9 @@ The structure of the project is shown below:
 * MIL-STD-1553 Tutorial (in doc)
 * МКИО ГОСТ Р 52070-2003 (in doc)
 * Разработка контроллера протокола MIL-STD-1553B на ПЛИС [1-4]
+
+# Further plans
+
+* Eliminate the crutch delay in device2 and device4
+* Use one memory design instead of two
+* Further redesigning the project to a more current SystemVerilog standard while maintaining support for IcarusVeilog
