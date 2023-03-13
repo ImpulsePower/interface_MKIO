@@ -69,6 +69,8 @@ The structure of the project is shown below:
 
 # Further plans
 
+* Introduction to the state machine - default states for more correct synthesis in Quartus
+* It's necessary to add synthesis constraints
 * Eliminate the crutch delay in device2 and device4
 * Use one memory design instead of two
 * Further redesigning the project to a more current SystemVerilog standard while maintaining support for IcarusVeilog
