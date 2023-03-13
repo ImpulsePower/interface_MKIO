@@ -67,7 +67,8 @@ always_ff @(posedge clk)
 begin
     if (busy_send) begin
         DO1 <= word_manchester[count_bit];
-        DO0 <= ~word_manchester[count_bit]; end
+        DO0 <= ~word_manchester[count_bit]; 
+    end
     else begin
         DO1 <= 1'b0;
         DO0 <= 1'b0; 
