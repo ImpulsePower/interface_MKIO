@@ -26,13 +26,13 @@ generate for (i = 0; i < 16; i = i + 1) begin : gen_manchester
     end
 endgenerate
 
+// Depending on the parity bit > calculating the parity bit
 // Synchro selection > assignment of the data field > assigning a pair of elements 
-// depending on the parity bit > calculating the parity bit
 always_comb begin : manchester
+    parity = ~(^ data_buf);
     word_manchester[39:34] = (cd_buf) ? 6'b000111 : 6'b111000;
     word_manchester[33:2]  = data_manchester;
     word_manchester[1:0]   = (parity) ? 2'b10 : 2'b01;
-    parity = ~(^ data_buf);
 end
 
 always_ff @ (posedge clk or posedge reset) begin
