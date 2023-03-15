@@ -69,6 +69,7 @@ The structure of the project is shown below:
 
 # Further plans
 
+* Universal search for submodules in the launching script
 * Introduction to the state machine - default states for more correct synthesis in Quartus
 * It's necessary to add synthesis constraints
 * Eliminate the crutch delay in device2 and device4
